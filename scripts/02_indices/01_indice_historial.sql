@@ -1,7 +1,7 @@
 USE SistemaDeFacturacion;
 
-CREATE NONCLUSTERED INDEX nc_historial_tabla_fecha
-    ON dbo.historial(id_tabla_auditada, fecha_cambio);
+CREATE NONCLUSTERED INDEX NC_HISTORIAL_TABLA_FECHA
+    ON DBO.HISTORIAL (ID_TABLA_AUDITADA, FECHA_CAMBIO);
 
-CREATE NONCLUSTERED INDEX nc_historial_tabla_registro
-    ON dbo.historial(id_tabla_auditada, registro_id);
+CREATE NONCLUSTERED INDEX NC_HISTORIAL_TABLA_REGISTRO
+    ON DBO.HISTORIAL (ID_TABLA_AUDITADA, REGISTRO_ID);
