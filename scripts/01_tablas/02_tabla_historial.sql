@@ -1,4 +1,5 @@
 USE SistemaDeFacturacion;
+
 CREATE TABLE tabla_auditada (
     id_tabla_auditada INT IDENTITY(1,1) PRIMARY KEY,
     nombre_tabla NVARCHAR(50) NOT NULL,
