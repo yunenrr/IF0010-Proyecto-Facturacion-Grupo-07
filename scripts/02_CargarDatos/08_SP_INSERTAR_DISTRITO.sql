@@ -11,26 +11,6 @@ BEGIN
     SET NOCOUNT ON;
 
     BEGIN TRY
-        IF @ID_DISTRITO IS NULL
-            THROW 53001, 'El ID del distrito es obligatorio.', 1;
-
-        IF @NOMBRE IS NULL OR TRIM(@NOMBRE) = ''
-            THROW 53002, 'El nombre del distrito es obligatorio.', 1;
-
-        IF
-            NOT EXISTS (
-                SELECT 1 FROM CANTON
-                WHERE ID_CANTON = @ID_CANTON
-            )
-            THROW 53003, 'El cantón indicado no existe.', 1;
-
-        IF
-            EXISTS (
-                SELECT 1 FROM DISTRITO
-                WHERE ID_DISTRITO = @ID_DISTRITO
-            )
-            THROW 53004, 'Ya existe un distrito con ese ID.', 1;
-
         INSERT INTO DISTRITO (ID_DISTRITO, NOMBRE, ID_CANTON)
         VALUES (@ID_DISTRITO, TRIM(@NOMBRE), @ID_CANTON);
 
