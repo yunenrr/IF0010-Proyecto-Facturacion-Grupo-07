@@ -1,24 +1,30 @@
 USE SISTEMADEFACTURACION;
 GO
 
-IF EXISTS (SELECT 1 FROM sys.objects WHERE name = 'pr_MigrarEmpresasEmisoras' AND type = 'P')
+IF EXISTS (
+    SELECT 1
+    FROM SYS.OBJECTS
+    WHERE NAME = 'PR_MIGRAREMPRESASEMISORAS'
+      AND TYPE = 'P'
+)
 BEGIN
-    DROP PROCEDURE dbo.pr_MigrarEmpresasEmisoras;
-END
+    DROP PROCEDURE DBO.PR_MIGRAREMPRESASEMISORAS;
+END;
 GO
 
-CREATE OR ALTER PROCEDURE dbo.pr_MigrarEmpresasEmisoras
-    @Cedula VARCHAR(20),
-    @NombreComercial VARCHAR(100),
-    @RazonSocial VARCHAR(100),
-    @Indicador BIT = 1,
-    @CorreoElectronico VARCHAR(100),
-    @Telefono VARCHAR(20),
-    @IdDireccion INT,
-    @IdEmpresaGenerado INT OUTPUT
+CREATE OR ALTER PROCEDURE DBO.PR_MIGRAREMPRESASEMISORAS
+    @CEDULA VARCHAR(20),
+    @NOMBRECOMERCIAL VARCHAR(100),
+    @RAZONSOCIAL VARCHAR(100),
+    @INDICADOR BIT = 1,
+    @CORREOELECTRONICO VARCHAR(100),
+    @TELEFONO VARCHAR(20),
+    @IDDIRECCION INT,
+    @IDEMPRESAGENERADO INT OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
+
     INSERT INTO EMPRESA_EMISORA (
         CEDULA,
         NOMBRE_COMERCIAL,
@@ -30,16 +36,16 @@ BEGIN
         ID_DIRECCION
     )
     VALUES (
-        TRIM(@Cedula),
-        TRIM(@NombreComercial),
-        TRIM(@RazonSocial),
+        TRIM(@CEDULA),
+        TRIM(@NOMBRECOMERCIAL),
+        TRIM(@RAZONSOCIAL),
         GETDATE(),
-        @Indicador,
-        LOWER(TRIM(@CorreoElectronico)),
-        TRIM(@Telefono),
-        @IdDireccion
+        @INDICADOR,
+        LOWER(TRIM(@CORREOELECTRONICO)),
+        TRIM(@TELEFONO),
+        @IDDIRECCION
     );
 
-    SET @IdEmpresaGenerado = SCOPE_IDENTITY();
+    SET @IDEMPRESAGENERADO = SCOPE_IDENTITY();
 END;
 GO
