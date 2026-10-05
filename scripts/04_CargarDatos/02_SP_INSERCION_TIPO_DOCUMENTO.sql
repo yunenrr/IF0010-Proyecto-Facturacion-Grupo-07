@@ -16,8 +16,8 @@ BEGIN
             DESCRIPCION
         )
         VALUES
-            ('FAC', 'Factura'),
-            ('TIQ', 'Tiquete');
+        ('FAC', 'Factura'),
+        ('TIQ', 'Tiquete');
 
         COMMIT TRANSACTION;
     END TRY
@@ -29,5 +29,6 @@ BEGIN
     END CATCH;
 END;
 GO
+
 EXEC DBO.PR_CARGA_TIPOS_DOCUMENTO;
 GO
