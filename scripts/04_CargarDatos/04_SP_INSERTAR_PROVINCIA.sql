@@ -1,9 +1,9 @@
 USE SISTEMADEFACTURACION;
 GO
 
-CREATE OR ALTER PROCEDURE dbo.pr_InsertarProvincia
+CREATE OR ALTER PROCEDURE DBO.PR_INSERTAR_PROVINCIA
     @ID_PROVINCIA INT,
-    @Nombre VARCHAR(50)
+    @NOMBRE VARCHAR(50)
 AS
 BEGIN
     SET XACT_ABORT ON;
@@ -13,23 +13,29 @@ BEGIN
         IF @ID_PROVINCIA IS NULL
             THROW 51001, 'El ID de la provincia es obligatorio.', 1;
 
-        IF TRIM(@Nombre) = '' OR @Nombre IS NULL
+        IF TRIM(@NOMBRE) = '' OR @NOMBRE IS NULL
             THROW 51002, 'El nombre de la provincia es obligatorio.', 1;
 
-        IF EXISTS (SELECT 1 FROM PROVINCIA WHERE ID_PROVINCIA = @ID_PROVINCIA)
+        IF EXISTS (
+            SELECT 1
+            FROM PROVINCIA
+            WHERE ID_PROVINCIA = @ID_PROVINCIA
+        )
             THROW 51003, 'Ya existe una provincia con ese ID.', 1;
 
         INSERT INTO PROVINCIA (ID_PROVINCIA, NOMBRE)
-        VALUES (@ID_PROVINCIA, TRIM(@Nombre));
+        VALUES (@ID_PROVINCIA, TRIM(@NOMBRE));
 
     END TRY
     BEGIN CATCH
-        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
-        DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
-        DECLARE @ErrorState INT = ERROR_STATE();
+        DECLARE @ERRORMESSAGE NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ERRORSEVERITY INT = ERROR_SEVERITY();
+        DECLARE @ERRORSTATE INT = ERROR_STATE();
 
-        IF @ErrorSeverity < 16 SET @ErrorSeverity = 16;
-        RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);
+        IF @ERRORSEVERITY < 16
+            SET @ERRORSEVERITY = 16;
+
+        RAISERROR (@ERRORMESSAGE, @ERRORSEVERITY, @ERRORSTATE);
         RETURN -1;
     END CATCH;
 
