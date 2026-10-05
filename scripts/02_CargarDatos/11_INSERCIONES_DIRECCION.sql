@@ -14,6 +14,5 @@ WITH
 INSERT INTO DIRECCION (DIRECCION_EXACTA, ID_DISTRITO)
 SELECT 
     CONCAT('Calle ', N, ', Ave Central, Edificio Corporativo #', N) AS DIRECCION_EXACTA,
-    -- Esto rota dinámicamente entre algunos códigos de distrito base (ej: 10101 a 10105)
     10101 + (N % 5) AS ID_DISTRITO
 FROM Numeros;
