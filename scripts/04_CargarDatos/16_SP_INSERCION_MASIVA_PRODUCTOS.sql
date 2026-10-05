@@ -19,6 +19,7 @@ BEGIN
             FROM SYS.ALL_OBJECTS AS A
             CROSS JOIN SYS.ALL_OBJECTS AS B
         )
+
         INSERT INTO DBO.PRODUCTOS (
             COD_INTERNO,
             DESCRIPCION,
@@ -32,27 +33,27 @@ BEGIN
             + RIGHT(
                 '0000' + CAST(NUMEROS.NUMERO AS VARCHAR(4)),
                 4
-            ),
+            ) AS COD_INTERNO,
             'Producto de prueba '
-            + CAST(NUMEROS.NUMERO AS VARCHAR(4)),
+            + CAST(NUMEROS.NUMERO AS VARCHAR(4)) AS DESCRIPCION,
             CAST(
                 500.00 + (NUMEROS.NUMERO * 100)
                 AS DECIMAL(10, 2)
-            ),
-            13.00,
-            100,
-            1
+            ) AS PRECIO_UNITARIO,
+            13.00 AS PORCENTAJE_IMPUESTO,
+            100 AS STOCK,
+            1 AS ESTADO
         FROM NUMEROS
         WHERE NOT EXISTS (
             SELECT 1
             FROM DBO.PRODUCTOS AS P
             WHERE P.COD_INTERNO
-                = 'PROD'
-                + RIGHT(
-                    '0000'
-                    + CAST(NUMEROS.NUMERO AS VARCHAR(4)),
-                    4
-                )
+                  = 'PROD'
+                  + RIGHT(
+                      '0000'
+                      + CAST(NUMEROS.NUMERO AS VARCHAR(4)),
+                      4
+                  )
         );
 
         COMMIT TRANSACTION;
@@ -65,5 +66,6 @@ BEGIN
     END CATCH;
 END;
 GO
+
 EXEC DBO.PR_INSERCION_MASIVA_PRODUCTOS;
 GO
