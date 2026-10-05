@@ -1,4 +1,4 @@
---SP INSERCION MASIVA DE SERVICIOS 
+-- SP INSERCION MASIVA DE SERVICIOS 
 USE SISTEMADEFACTURACION;
 GO
 
@@ -14,9 +14,10 @@ BEGIN
         WITH N AS (
             SELECT TOP (1000)
                 ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS N
-            FROM SYS.ALL_OBJECTS A
-            CROSS JOIN SYS.ALL_OBJECTS B
+            FROM SYS.ALL_OBJECTS AS A
+            CROSS JOIN SYS.ALL_OBJECTS AS B
         )
+
         INSERT INTO DBO.SERVICIOS (
             COD_INTERNO,
             DESCRIPCION,
@@ -26,21 +27,21 @@ BEGIN
             ESTADO
         )
         SELECT
-            'SERV' + RIGHT('0000' + CAST(N AS VARCHAR(4)), 4),
-            'Servicio de prueba ' + CAST(N AS VARCHAR(4)),
-            CAST(5000.00 + (N * 100) AS DECIMAL(10, 2)),
-            'Unidad',
-            13.00,
-            1
+            'SERV' + RIGHT('0000' + CAST(N.N AS VARCHAR(4)), 4) AS COD_INTERNO,
+            'Servicio de prueba ' + CAST(N.N AS VARCHAR(4)) AS DESCRIPCION,
+            CAST(5000.00 + (N.N * 100) AS DECIMAL(10, 2)) AS PRECIO_UNITARIO,
+            'Unidad' AS UNIDAD_MEDIDA,
+            13.00 AS PORCENTAJE_IMPUESTO,
+            1 AS ESTADO
         FROM N
         WHERE NOT EXISTS (
             SELECT 1
-            FROM DBO.SERVICIOS S
-            WHERE S.COD_INTERNO =
-                'SERV' + RIGHT(
-                    '0000' + CAST(N.N AS VARCHAR(4)),
-                    4
-                )
+            FROM DBO.SERVICIOS AS S
+            WHERE S.COD_INTERNO
+                  = 'SERV' + RIGHT(
+                      '0000' + CAST(N.N AS VARCHAR(4)),
+                      4
+                  )
         );
 
         COMMIT TRANSACTION;
@@ -53,5 +54,6 @@ BEGIN
     END CATCH;
 END;
 GO
+
 EXEC DBO.PR_INSERCION_MASIVA_SERVICIOS;
 GO
