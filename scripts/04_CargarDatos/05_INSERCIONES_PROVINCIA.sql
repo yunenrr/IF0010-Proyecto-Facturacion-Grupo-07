@@ -1,11 +1,31 @@
 USE SISTEMADEFACTURACION;
 GO
 
-EXEC dbo.pr_InsertarProvincia @ID_PROVINCIA=1, @Nombre='San José';
-EXEC dbo.pr_InsertarProvincia @ID_PROVINCIA=2, @Nombre='Alajuela';
-EXEC dbo.pr_InsertarProvincia @ID_PROVINCIA=3, @Nombre='Cartago';
-EXEC dbo.pr_InsertarProvincia @ID_PROVINCIA=4, @Nombre='Heredia';
-EXEC dbo.pr_InsertarProvincia @ID_PROVINCIA=5, @Nombre='Guanacaste';
-EXEC dbo.pr_InsertarProvincia @ID_PROVINCIA=6, @Nombre='Puntarenas';
-EXEC dbo.pr_InsertarProvincia @ID_PROVINCIA=7, @Nombre='Limón';
+EXEC DBO.PR_INSERTAR_PROVINCIA
+    @ID_PROVINCIA = 1,
+    @NOMBRE = 'San José';
+
+EXEC DBO.PR_INSERTAR_PROVINCIA
+    @ID_PROVINCIA = 2,
+    @NOMBRE = 'Alajuela';
+
+EXEC DBO.PR_INSERTAR_PROVINCIA
+    @ID_PROVINCIA = 3,
+    @NOMBRE = 'Cartago';
+
+EXEC DBO.PR_INSERTAR_PROVINCIA
+    @ID_PROVINCIA = 4,
+    @NOMBRE = 'Heredia';
+
+EXEC DBO.PR_INSERTAR_PROVINCIA
+    @ID_PROVINCIA = 5,
+    @NOMBRE = 'Guanacaste';
+
+EXEC DBO.PR_INSERTAR_PROVINCIA
+    @ID_PROVINCIA = 6,
+    @NOMBRE = 'Puntarenas';
+
+EXEC DBO.PR_INSERTAR_PROVINCIA
+    @ID_PROVINCIA = 7,
+    @NOMBRE = 'Limón';
 GO
