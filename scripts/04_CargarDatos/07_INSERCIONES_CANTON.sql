@@ -1,98 +1,420 @@
 USE SISTEMADEFACTURACION;
 GO
 
---San José
-EXEC dbo.pr_InsertarCanton @ID_CANTON=101, @Nombre='San José', @ID_PROVINCIA=1;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=102, @Nombre='Escazú', @ID_PROVINCIA=1;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=103, @Nombre='Desamparados', @ID_PROVINCIA=1;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=104, @Nombre='Puriscal', @ID_PROVINCIA=1;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=105, @Nombre='Tarrazú', @ID_PROVINCIA=1;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=106, @Nombre='Aserrí', @ID_PROVINCIA=1;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=107, @Nombre='Mora', @ID_PROVINCIA=1;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=108, @Nombre='Goicoechea', @ID_PROVINCIA=1;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=109, @Nombre='Santa Ana', @ID_PROVINCIA=1;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=110, @Nombre='Alajuelita', @ID_PROVINCIA=1;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=111, @Nombre='Vázquez de Coronado', @ID_PROVINCIA=1;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=112, @Nombre='Acosta', @ID_PROVINCIA=1;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=113, @Nombre='Tibás', @ID_PROVINCIA=1;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=114, @Nombre='Moravia', @ID_PROVINCIA=1;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=115, @Nombre='Montes de Oca', @ID_PROVINCIA=1;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=116, @Nombre='Turrubares', @ID_PROVINCIA=1;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=117, @Nombre='Dota', @ID_PROVINCIA=1;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=118, @Nombre='Curridabat', @ID_PROVINCIA=1;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=119, @Nombre='Pérez Zeledón', @ID_PROVINCIA=1;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=120, @Nombre='León Cortés Castro', @ID_PROVINCIA=1;
+-- San José
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 101,
+    @NOMBRE = 'San José',
+    @ID_PROVINCIA = 1;
 
---Alajuela
-EXEC dbo.pr_InsertarCanton @ID_CANTON=201, @Nombre='Alajuela', @ID_PROVINCIA=2;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=202, @Nombre='San Ramón', @ID_PROVINCIA=2;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=203, @Nombre='Grecia', @ID_PROVINCIA=2;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=204, @Nombre='San Mateo', @ID_PROVINCIA=2;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=205, @Nombre='Atenas', @ID_PROVINCIA=2;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=206, @Nombre='Naranjo', @ID_PROVINCIA=2;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=207, @Nombre='Palmares', @ID_PROVINCIA=2;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=208, @Nombre='Poás', @ID_PROVINCIA=2;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=209, @Nombre='Orotina', @ID_PROVINCIA=2;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=210, @Nombre='San Carlos', @ID_PROVINCIA=2;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=211, @Nombre='Zarcero', @ID_PROVINCIA=2;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=212, @Nombre='Sarchí', @ID_PROVINCIA=2;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=213, @Nombre='Upala', @ID_PROVINCIA=2;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=214, @Nombre='Los Chiles', @ID_PROVINCIA=2;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=215, @Nombre='Guatuso', @ID_PROVINCIA=2;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=216, @Nombre='Río Cuarto', @ID_PROVINCIA=2;
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 102,
+    @NOMBRE = 'Escazú',
+    @ID_PROVINCIA = 1;
 
---Cartago
-EXEC dbo.pr_InsertarCanton @ID_CANTON=301, @Nombre='Cartago', @ID_PROVINCIA=3;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=302, @Nombre='Paraíso', @ID_PROVINCIA=3;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=303, @Nombre='La Unión', @ID_PROVINCIA=3;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=304, @Nombre='Jiménez', @ID_PROVINCIA=3;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=305, @Nombre='Turrialba', @ID_PROVINCIA=3;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=306, @Nombre='Alvarado', @ID_PROVINCIA=3;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=307, @Nombre='Oreamuno', @ID_PROVINCIA=3;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=308, @Nombre='El Guarco', @ID_PROVINCIA=3;
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 103,
+    @NOMBRE = 'Desamparados',
+    @ID_PROVINCIA = 1;
 
---Heredia
-EXEC dbo.pr_InsertarCanton @ID_CANTON=401, @Nombre='Heredia', @ID_PROVINCIA=4;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=402, @Nombre='Barva', @ID_PROVINCIA=4;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=403, @Nombre='Santo Domingo', @ID_PROVINCIA=4;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=404, @Nombre='Santa Bárbara', @ID_PROVINCIA=4;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=405, @Nombre='San Rafael', @ID_PROVINCIA=4;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=406, @Nombre='San Isidro', @ID_PROVINCIA=4;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=407, @Nombre='Belén', @ID_PROVINCIA=4;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=408, @Nombre='Flores', @ID_PROVINCIA=4;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=409, @Nombre='San Pablo', @ID_PROVINCIA=4;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=410, @Nombre='Sarapiquí', @ID_PROVINCIA=4;
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 104,
+    @NOMBRE = 'Puriscal',
+    @ID_PROVINCIA = 1;
 
---Guanacaste
-EXEC dbo.pr_InsertarCanton @ID_CANTON=501, @Nombre='Liberia', @ID_PROVINCIA=5;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=502, @Nombre='Nicoya', @ID_PROVINCIA=5;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=503, @Nombre='Santa Cruz', @ID_PROVINCIA=5;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=504, @Nombre='Bagaces', @ID_PROVINCIA=5;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=505, @Nombre='Carrillo', @ID_PROVINCIA=5;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=506, @Nombre='Cañas', @ID_PROVINCIA=5;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=507, @Nombre='Abangares', @ID_PROVINCIA=5;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=508, @Nombre='Tilarán', @ID_PROVINCIA=5;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=509, @Nombre='Nandayure', @ID_PROVINCIA=5;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=510, @Nombre='La Cruz', @ID_PROVINCIA=5;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=511, @Nombre='Hojancha', @ID_PROVINCIA=5;
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 105,
+    @NOMBRE = 'Tarrazú',
+    @ID_PROVINCIA = 1;
 
---Puntarenas
-EXEC dbo.pr_InsertarCanton @ID_CANTON=601, @Nombre='Puntarenas', @ID_PROVINCIA=6;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=602, @Nombre='Esparza', @ID_PROVINCIA=6;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=603, @Nombre='Buenos Aires', @ID_PROVINCIA=6;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=604, @Nombre='Montes de Oro', @ID_PROVINCIA=6;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=605, @Nombre='Osa', @ID_PROVINCIA=6;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=606, @Nombre='Quepos', @ID_PROVINCIA=6;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=607, @Nombre='Golfito', @ID_PROVINCIA=6;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=608, @Nombre='Coto Brus', @ID_PROVINCIA=6;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=609, @Nombre='Parrita', @ID_PROVINCIA=6;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=610, @Nombre='Corredores', @ID_PROVINCIA=6;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=611, @Nombre='Garabito', @ID_PROVINCIA=6;
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 106,
+    @NOMBRE = 'Aserrí',
+    @ID_PROVINCIA = 1;
 
---Limon
-EXEC dbo.pr_InsertarCanton @ID_CANTON=701, @Nombre='Limón', @ID_PROVINCIA=7;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=702, @Nombre='Pococí', @ID_PROVINCIA=7;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=703, @Nombre='Siquirres', @ID_PROVINCIA=7;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=704, @Nombre='Talamanca', @ID_PROVINCIA=7;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=705, @Nombre='Matina', @ID_PROVINCIA=7;
-EXEC dbo.pr_InsertarCanton @ID_CANTON=706, @Nombre='Guácimo', @ID_PROVINCIA=7;
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 107,
+    @NOMBRE = 'Mora',
+    @ID_PROVINCIA = 1;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 108,
+    @NOMBRE = 'Goicoechea',
+    @ID_PROVINCIA = 1;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 109,
+    @NOMBRE = 'Santa Ana',
+    @ID_PROVINCIA = 1;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 110,
+    @NOMBRE = 'Alajuelita',
+    @ID_PROVINCIA = 1;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 111,
+    @NOMBRE = 'Vázquez de Coronado',
+    @ID_PROVINCIA = 1;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 112,
+    @NOMBRE = 'Acosta',
+    @ID_PROVINCIA = 1;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 113,
+    @NOMBRE = 'Tibás',
+    @ID_PROVINCIA = 1;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 114,
+    @NOMBRE = 'Moravia',
+    @ID_PROVINCIA = 1;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 115,
+    @NOMBRE = 'Montes de Oca',
+    @ID_PROVINCIA = 1;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 116,
+    @NOMBRE = 'Turrubares',
+    @ID_PROVINCIA = 1;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 117,
+    @NOMBRE = 'Dota',
+    @ID_PROVINCIA = 1;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 118,
+    @NOMBRE = 'Curridabat',
+    @ID_PROVINCIA = 1;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 119,
+    @NOMBRE = 'Pérez Zeledón',
+    @ID_PROVINCIA = 1;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 120,
+    @NOMBRE = 'León Cortés Castro',
+    @ID_PROVINCIA = 1;
+
+-- Alajuela
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 201,
+    @NOMBRE = 'Alajuela',
+    @ID_PROVINCIA = 2;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 202,
+    @NOMBRE = 'San Ramón',
+    @ID_PROVINCIA = 2;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 203,
+    @NOMBRE = 'Grecia',
+    @ID_PROVINCIA = 2;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 204,
+    @NOMBRE = 'San Mateo',
+    @ID_PROVINCIA = 2;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 205,
+    @NOMBRE = 'Atenas',
+    @ID_PROVINCIA = 2;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 206,
+    @NOMBRE = 'Naranjo',
+    @ID_PROVINCIA = 2;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 207,
+    @NOMBRE = 'Palmares',
+    @ID_PROVINCIA = 2;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 208,
+    @NOMBRE = 'Poás',
+    @ID_PROVINCIA = 2;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 209,
+    @NOMBRE = 'Orotina',
+    @ID_PROVINCIA = 2;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 210,
+    @NOMBRE = 'San Carlos',
+    @ID_PROVINCIA = 2;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 211,
+    @NOMBRE = 'Zarcero',
+    @ID_PROVINCIA = 2;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 212,
+    @NOMBRE = 'Sarchí',
+    @ID_PROVINCIA = 2;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 213,
+    @NOMBRE = 'Upala',
+    @ID_PROVINCIA = 2;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 214,
+    @NOMBRE = 'Los Chiles',
+    @ID_PROVINCIA = 2;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 215,
+    @NOMBRE = 'Guatuso',
+    @ID_PROVINCIA = 2;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 216,
+    @NOMBRE = 'Río Cuarto',
+    @ID_PROVINCIA = 2;
+
+-- Cartago
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 301,
+    @NOMBRE = 'Cartago',
+    @ID_PROVINCIA = 3;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 302,
+    @NOMBRE = 'Paraíso',
+    @ID_PROVINCIA = 3;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 303,
+    @NOMBRE = 'La Unión',
+    @ID_PROVINCIA = 3;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 304,
+    @NOMBRE = 'Jiménez',
+    @ID_PROVINCIA = 3;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 305,
+    @NOMBRE = 'Turrialba',
+    @ID_PROVINCIA = 3;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 306,
+    @NOMBRE = 'Alvarado',
+    @ID_PROVINCIA = 3;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 307,
+    @NOMBRE = 'Oreamuno',
+    @ID_PROVINCIA = 3;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 308,
+    @NOMBRE = 'El Guarco',
+    @ID_PROVINCIA = 3;
+
+-- Heredia
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 401,
+    @NOMBRE = 'Heredia',
+    @ID_PROVINCIA = 4;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 402,
+    @NOMBRE = 'Barva',
+    @ID_PROVINCIA = 4;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 403,
+    @NOMBRE = 'Santo Domingo',
+    @ID_PROVINCIA = 4;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 404,
+    @NOMBRE = 'Santa Bárbara',
+    @ID_PROVINCIA = 4;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 405,
+    @NOMBRE = 'San Rafael',
+    @ID_PROVINCIA = 4;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 406,
+    @NOMBRE = 'San Isidro',
+    @ID_PROVINCIA = 4;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 407,
+    @NOMBRE = 'Belén',
+    @ID_PROVINCIA = 4;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 408,
+    @NOMBRE = 'Flores',
+    @ID_PROVINCIA = 4;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 409,
+    @NOMBRE = 'San Pablo',
+    @ID_PROVINCIA = 4;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 410,
+    @NOMBRE = 'Sarapiquí',
+    @ID_PROVINCIA = 4;
+
+-- Guanacaste
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 501,
+    @NOMBRE = 'Liberia',
+    @ID_PROVINCIA = 5;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 502,
+    @NOMBRE = 'Nicoya',
+    @ID_PROVINCIA = 5;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 503,
+    @NOMBRE = 'Santa Cruz',
+    @ID_PROVINCIA = 5;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 504,
+    @NOMBRE = 'Bagaces',
+    @ID_PROVINCIA = 5;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 505,
+    @NOMBRE = 'Carrillo',
+    @ID_PROVINCIA = 5;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 506,
+    @NOMBRE = 'Cañas',
+    @ID_PROVINCIA = 5;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 507,
+    @NOMBRE = 'Abangares',
+    @ID_PROVINCIA = 5;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 508,
+    @NOMBRE = 'Tilarán',
+    @ID_PROVINCIA = 5;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 509,
+    @NOMBRE = 'Nandayure',
+    @ID_PROVINCIA = 5;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 510,
+    @NOMBRE = 'La Cruz',
+    @ID_PROVINCIA = 5;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 511,
+    @NOMBRE = 'Hojancha',
+    @ID_PROVINCIA = 5;
+
+-- Puntarenas
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 601,
+    @NOMBRE = 'Puntarenas',
+    @ID_PROVINCIA = 6;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 602,
+    @NOMBRE = 'Esparza',
+    @ID_PROVINCIA = 6;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 603,
+    @NOMBRE = 'Buenos Aires',
+    @ID_PROVINCIA = 6;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 604,
+    @NOMBRE = 'Montes de Oro',
+    @ID_PROVINCIA = 6;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 605,
+    @NOMBRE = 'Osa',
+    @ID_PROVINCIA = 6;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 606,
+    @NOMBRE = 'Quepos',
+    @ID_PROVINCIA = 6;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 607,
+    @NOMBRE = 'Golfito',
+    @ID_PROVINCIA = 6;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 608,
+    @NOMBRE = 'Coto Brus',
+    @ID_PROVINCIA = 6;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 609,
+    @NOMBRE = 'Parrita',
+    @ID_PROVINCIA = 6;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 610,
+    @NOMBRE = 'Corredores',
+    @ID_PROVINCIA = 6;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 611,
+    @NOMBRE = 'Garabito',
+    @ID_PROVINCIA = 6;
+
+-- Limón
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 701,
+    @NOMBRE = 'Limón',
+    @ID_PROVINCIA = 7;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 702,
+    @NOMBRE = 'Pococí',
+    @ID_PROVINCIA = 7;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 703,
+    @NOMBRE = 'Siquirres',
+    @ID_PROVINCIA = 7;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 704,
+    @NOMBRE = 'Talamanca',
+    @ID_PROVINCIA = 7;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 705,
+    @NOMBRE = 'Matina',
+    @ID_PROVINCIA = 7;
+
+EXEC DBO.PR_INSERTAR_CANTON
+    @ID_CANTON = 706,
+    @NOMBRE = 'Guácimo',
+    @ID_PROVINCIA = 7;
+GO
