@@ -45,15 +45,15 @@ BEGIN
             1 AS ESTADO
         FROM NUMEROS
         WHERE NOT EXISTS (
-            SELECT 1
+            SELECT
+                1
             FROM DBO.PRODUCTOS AS P
-            WHERE P.COD_INTERNO
-                  = 'PROD'
-                  + RIGHT(
-                      '0000'
-                      + CAST(NUMEROS.NUMERO AS VARCHAR(4)),
-                      4
-                  )
+            WHERE
+                P.COD_INTERNO = 'PROD'
+                + RIGHT(
+                    '0000' + CAST(NUMEROS.NUMERO AS VARCHAR(4)),
+                    4
+                )
         );
 
         COMMIT TRANSACTION;
