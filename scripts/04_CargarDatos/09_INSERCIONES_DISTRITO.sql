@@ -1,39 +1,42 @@
 USE SISTEMADEFACTURACION;
 GO
-  
-DECLARE @Id INT;
-DECLARE @i INT = 1;
-DECLARE @total INT = 50000;
-DECLARE @IdDistrito INT;
-DECLARE @DireccionExacta VARCHAR(200);
 
-IF OBJECT_ID('tempdb..#Distritos') IS NOT NULL DROP TABLE #Distritos;
+DECLARE @ID INT;
+DECLARE @I INT = 1;
+DECLARE @TOTAL INT = 50000;
+DECLARE @IDDISTRITO INT;
+DECLARE @DIRECCIONEXACTA VARCHAR(200);
 
-SELECT ID_DISTRITO,
-       ROW_NUMBER() OVER (ORDER BY ID_DISTRITO) AS rn
-INTO #Distritos
-FROM Distrito;
+IF OBJECT_ID('tempdb..#Distritos') IS NOT NULL
+    DROP TABLE #DISTRITOS;
 
-DECLARE @TotalDistritos INT = (SELECT COUNT(*) FROM #Distritos);
+SELECT
+    ID_DISTRITO,
+    ROW_NUMBER() OVER (ORDER BY ID_DISTRITO) AS RN
+INTO #DISTRITOS
+FROM DISTRITO;
 
-WHILE @i <= @total
+DECLARE @TOTALDISTRITOS INT = (SELECT COUNT(*) FROM #DISTRITOS);
+
+WHILE @I <= @TOTAL
 BEGIN
-    SELECT @IdDistrito = ID_DISTRITO
-    FROM #Distritos
-    WHERE rn = ((@i - 1) % @TotalDistritos) + 1;
+    SELECT @IDDISTRITO = ID_DISTRITO
+    FROM #DISTRITOS
+    WHERE RN = ((@I - 1) % @TOTALDISTRITOS) + 1;
 
-    SET @DireccionExacta = 'Dirección generada #' + CAST(@i AS VARCHAR(10)) + 
-                           ', Edificio Genérico ' + CAST((@i % 100) AS VARCHAR(3)) + 
-                           ', piso ' + CAST((@i % 20) + 1 AS VARCHAR(2)) + 
-                           ', oficina ' + CAST((@i % 50) + 1 AS VARCHAR(2));
+    SET @DIRECCIONEXACTA
+        = 'Dirección generada #' + CAST(@I AS VARCHAR(10))
+        + ', Edificio Genérico ' + CAST((@I % 100) AS VARCHAR(3))
+        + ', piso ' + CAST((@I % 20) + 1 AS VARCHAR(2))
+        + ', oficina ' + CAST((@I % 50) + 1 AS VARCHAR(2));
 
-    EXEC dbo.pr_InsertarDireccion 
-        @DireccionExacta     = @DireccionExacta,
-        @IdDistrito          = @IdDistrito,
-        @IdDireccionGenerado = @Id OUTPUT;
+    EXEC DBO.PR_INSERTARDIRECCION
+        @DIRECCIONEXACTA = @DIRECCIONEXACTA,
+        @IDDISTRITO = @IDDISTRITO,
+        @IDDIRECCIONGENERADO = @ID OUTPUT;
 
-    SET @i = @i + 1;
+    SET @I = @I + 1;
 END
 
-DROP TABLE #Distritos;
+DROP TABLE #DISTRITOS;
 GO
