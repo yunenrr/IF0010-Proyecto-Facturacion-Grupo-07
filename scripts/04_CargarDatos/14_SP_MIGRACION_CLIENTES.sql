@@ -1,19 +1,24 @@
 USE SISTEMADEFACTURACION;
 GO
 
-IF EXISTS (SELECT 1 FROM sys.objects WHERE name = 'pr_MigrarClientes' AND type = 'P')
+IF EXISTS (
+    SELECT 1
+    FROM SYS.OBJECTS
+    WHERE NAME = 'PR_MIGRARCLIENTES'
+      AND TYPE = 'P'
+)
 BEGIN
-    DROP PROCEDURE dbo.pr_MigrarClientes;
-END
+    DROP PROCEDURE DBO.PR_MIGRARCLIENTES;
+END;
 GO
 
-CREATE OR ALTER PROCEDURE dbo.pr_MigrarClientes
-    @Cedula VARCHAR(20),
-    @NombreRazonSocial VARCHAR(100) = 'No aplica',
-    @CorreoElectronico VARCHAR(100),
-    @Telefono VARCHAR(20),
-    @IdDireccion INT,
-    @IdClienteGenerado INT OUTPUT
+CREATE OR ALTER PROCEDURE DBO.PR_MIGRARCLIENTES
+    @CEDULA VARCHAR(20),
+    @NOMBRERAZONSOCIAL VARCHAR(100) = 'No aplica',
+    @CORREOELECTRONICO VARCHAR(100),
+    @TELEFONO VARCHAR(20),
+    @IDDIRECCION INT,
+    @IDCLIENTEGENERADO INT OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -28,15 +33,15 @@ BEGIN
         ID_DIRECCION
     )
     VALUES (
-        TRIM(@Cedula),
-        ISNULL(NULLIF(TRIM(@NombreRazonSocial), ''), 'No aplica'),
-        LOWER(TRIM(@CorreoElectronico)),
-        TRIM(@Telefono),
+        TRIM(@CEDULA),
+        ISNULL(NULLIF(TRIM(@NOMBRERAZONSOCIAL), ''), 'No aplica'),
+        LOWER(TRIM(@CORREOELECTRONICO)),
+        TRIM(@TELEFONO),
         GETDATE(),
         GETDATE(),
-        @IdDireccion
+        @IDDIRECCION
     );
 
-    SET @IdClienteGenerado = SCOPE_IDENTITY();
+    SET @IDCLIENTEGENERADO = SCOPE_IDENTITY();
 END;
 GO
