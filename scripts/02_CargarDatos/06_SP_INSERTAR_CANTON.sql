@@ -11,28 +11,6 @@ BEGIN
     SET NOCOUNT ON;
 
     BEGIN TRY
-        IF @ID_CANTON IS NULL
-            THROW 52001, 'El ID del cantón es obligatorio.', 1;
-
-        IF TRIM(@NOMBRE) = '' OR @NOMBRE IS NULL
-            THROW 52002, 'El nombre del cantón es obligatorio.', 1;
-
-        IF
-            NOT EXISTS (
-                SELECT 1
-                FROM PROVINCIA
-                WHERE ID_PROVINCIA = @ID_PROVINCIA
-            )
-            THROW 52003, 'La provincia indicada no existe.', 1;
-
-        IF
-            EXISTS (
-                SELECT 1
-                FROM CANTON
-                WHERE ID_CANTON = @ID_CANTON
-            )
-            THROW 52004, 'Ya existe un cantón con ese ID.', 1;
-
         INSERT INTO CANTON (
             ID_CANTON,
             NOMBRE,
