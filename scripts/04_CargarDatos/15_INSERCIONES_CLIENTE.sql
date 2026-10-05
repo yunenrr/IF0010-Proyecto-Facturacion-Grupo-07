@@ -1,34 +1,49 @@
 USE SISTEMADEFACTURACION;
 GO
 
-DECLARE @Contador INT = 1;
-DECLARE @CedulaGen VARCHAR(20);
-DECLARE @NombreGen VARCHAR(100);
-DECLARE @CorreoGen VARCHAR(100);
-DECLARE @TelefonoGen VARCHAR(20);
-DECLARE @IdDireccionValido INT;
-DECLARE @IdSalida INT;
+DECLARE @CONTADOR INT = 1;
+DECLARE @CEDULAGEN VARCHAR(20);
+DECLARE @NOMBREGEN VARCHAR(100);
+DECLARE @CORREOGEN VARCHAR(100);
+DECLARE @TELEFONOGEN VARCHAR(20);
+DECLARE @IDDIRECCIONVALIDO INT;
+DECLARE @IDSALIDA INT;
 
 SET NOCOUNT ON;
 
-WHILE @Contador <= 50000
+WHILE @CONTADOR <= 50000
 BEGIN
-    SET @IdDireccionValido = @Contador;
+    SET @IDDIRECCIONVALIDO = @CONTADOR;
 
-    SET @CedulaGen = '1-' + RIGHT('0000' + CAST((@Contador % 9000) + 1000 AS VARCHAR(10)), 4) + '-' + RIGHT('0000' + CAST(@Contador AS VARCHAR(10)), 4);
-    SET @NombreGen = 'Cliente Pruebas S.A. ' + CAST(@Contador AS VARCHAR(10));
-    SET @CorreoGen = 'clienteprueba' + CAST(@Contador AS VARCHAR(10)) + '@facturacioncr.com';
-    SET @TelefonoGen = '8' + RIGHT('0000000' + CAST(7000000 + @Contador AS VARCHAR(10)), 7);
+    SET @CEDULAGEN
+        = '1-'
+          + RIGHT(
+              '0000' + CAST((@CONTADOR % 9000) + 1000 AS VARCHAR(10)),
+              4
+          )
+          + '-'
+          + RIGHT('0000' + CAST(@CONTADOR AS VARCHAR(10)), 4);
+    SET @NOMBREGEN
+        = 'Cliente Pruebas S.A. ' + CAST(@CONTADOR AS VARCHAR(10));
+    SET @CORREOGEN
+        = 'clienteprueba'
+          + CAST(@CONTADOR AS VARCHAR(10))
+          + '@facturacioncr.com';
+    SET @TELEFONOGEN
+        = '8'
+          + RIGHT(
+              '0000000' + CAST(7000000 + @CONTADOR AS VARCHAR(10)),
+              7
+          );
 
-    EXEC dbo.pr_MigrarClientes
-        @Cedula = @CedulaGen,
-        @NombreRazonSocial = @NombreGen,
-        @CorreoElectronico = @CorreoGen,
-        @Telefono = @TelefonoGen,
-        @IdDireccion = @IdDireccionValido,
-        @IdClienteGenerado = @IdSalida OUTPUT;
+    EXEC DBO.PR_MIGRARCLIENTES
+        @CEDULA = @CEDULAGEN,
+        @NOMBRERAZONSOCIAL = @NOMBREGEN,
+        @CORREOELECTRONICO = @CORREOGEN,
+        @TELEFONO = @TELEFONOGEN,
+        @IDDIRECCION = @IDDIRECCIONVALIDO,
+        @IDCLIENTEGENERADO = @IDSALIDA OUTPUT;
 
-    SET @Contador = @Contador + 1;
+    SET @CONTADOR = @CONTADOR + 1;
 END;
-
 GO
