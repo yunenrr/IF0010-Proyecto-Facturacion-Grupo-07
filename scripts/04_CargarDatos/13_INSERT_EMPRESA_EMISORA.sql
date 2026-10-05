@@ -1,38 +1,52 @@
 USE SISTEMADEFACTURACION;
 GO
 
-DECLARE @Contador INT = 1;
-DECLARE @CedulaGen VARCHAR(20);
-DECLARE @NombreGen VARCHAR(100);
-DECLARE @RazonGen VARCHAR(100);
-DECLARE @CorreoGen VARCHAR(100);
-DECLARE @TelefonoGen VARCHAR(20);
-DECLARE @IdSalida INT;
+DECLARE @CONTADOR INT = 1;
+DECLARE @CEDULAGEN VARCHAR(20);
+DECLARE @NOMBREGEN VARCHAR(100);
+DECLARE @RAZONGEN VARCHAR(100);
+DECLARE @CORREOGEN VARCHAR(100);
+DECLARE @TELEFONOGEN VARCHAR(20);
+DECLARE @IDDIRECCIONVALIDO INT;
+DECLARE @IDSALIDA INT;
 
 SET NOCOUNT ON;
 
-WHILE @Contador <= 100
+WHILE @CONTADOR <= 100
 BEGIN
-    DECLARE @IdDireccionValido INT = @Contador;
+    SET @IDDIRECCIONVALIDO = @CONTADOR;
 
-    SET @CedulaGen = '3-101-' + RIGHT('000000' + CAST(@Contador AS VARCHAR(10)), 6);
-    SET @NombreGen = 'Empresa Pruebas S.A. ' + CAST(@Contador AS VARCHAR(10));
-    SET @RazonGen = 'Corporación Comercial ' + CAST(@Contador AS VARCHAR(10)) + ' Limitada';
-    SET @CorreoGen = 'contacto' + CAST(@Contador AS VARCHAR(10)) + '@empresaprueba.com';
-    SET @TelefonoGen = '8000' + RIGHT('0000' + CAST(@Contador AS VARCHAR(10)), 4);
+    SET @CEDULAGEN
+        = '3-101-'
+          + RIGHT('000000' + CAST(@CONTADOR AS VARCHAR(10)), 6);
+    SET @NOMBREGEN
+        = 'Empresa Pruebas S.A. '
+          + CAST(@CONTADOR AS VARCHAR(10));
+    SET @RAZONGEN
+        = 'Corporación Comercial '
+          + CAST(@CONTADOR AS VARCHAR(10))
+          + ' Limitada';
+    SET @CORREOGEN
+        = 'contacto'
+          + CAST(@CONTADOR AS VARCHAR(10))
+          + '@empresaprueba.com';
+    SET @TELEFONOGEN
+        = '8000'
+          + RIGHT('0000' + CAST(@CONTADOR AS VARCHAR(10)), 4);
 
-    EXEC dbo.pr_MigrarEmpresasEmisoras
-        @Cedula = @CedulaGen,
-        @NombreComercial = @NombreGen,
-        @RazonSocial = @RazonGen,
-        @Indicador = 1,
-        @CorreoElectronico = @CorreoGen,
-        @Telefono = @TelefonoGen,
-        @IdDireccion = @IdDireccionValido,
-        @IdEmpresaGenerado = @IdSalida OUTPUT;
+    EXEC DBO.PR_MIGRAREMPRESASEMISORAS
+        @CEDULA = @CEDULAGEN,
+        @NOMBRECOMERCIAL = @NOMBREGEN,
+        @RAZONSOCIAL = @RAZONGEN,
+        @INDICADOR = 1,
+        @CORREOELECTRONICO = @CORREOGEN,
+        @TELEFONO = @TELEFONOGEN,
+        @IDDIRECCION = @IDDIRECCIONVALIDO,
+        @IDEMPRESAGENERADO = @IDSALIDA OUTPUT;
 
-    SET @Contador = @Contador + 1;
+    SET @CONTADOR = @CONTADOR + 1;
 END;
 
-PRINT '¡Proceso finalizado! Se han migrado las 100 empresas emisoras exitosamente en tiempo récord.';
+PRINT '¡Proceso finalizado! Se han migrado las 100 empresas '
+      + 'emisoras exitosamente en tiempo récord.';
 GO
