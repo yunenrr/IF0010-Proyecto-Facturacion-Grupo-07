@@ -1,7 +1,7 @@
 USE SISTEMADEFACTURACION;
 GO
 
-CREATE OR ALTER PROCEDURE USP_CREAR_FACTURA_SIN_FILTRO(
+CREATE OR ALTER PROCEDURE USP_CREAR_FACTURA_SIN_FILTRO (
     @ID_EMPRESA INT,
     @ID_CLIENTE INT,
     @COD_MONEDA CHAR(3),
@@ -29,8 +29,10 @@ BEGIN
         BEGIN TRANSACTION;
 
         IF @IDENTIFICADOR IS NULL
-            SET @IDENTIFICADOR = FORMAT(GETDATE(), 'yyyyMMddHHmmss')
-                                 + '-' + @COD_TIPO;
+            SET @IDENTIFICADOR
+                = FORMAT(GETDATE(), 'yyyyMMddHHmmss')
+                + '-'
+                + @COD_TIPO;
 
         INSERT INTO FACTURA (
             IDENTIFICADOR,
