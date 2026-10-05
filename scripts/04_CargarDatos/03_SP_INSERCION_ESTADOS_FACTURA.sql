@@ -18,26 +18,26 @@ BEGIN
             ESTADO
         )
         VALUES
-            (
-                'BOR',
-                'Factura en borrador, puede agregar mas filas',
-                'BORRADOR'
-            ),
-            (
-                'EMI',
-                'Factura emitida al cliente',
-                'EMITIDA'
-            ),
-            (
-                'PAG',
-                'Factura pagada por el cliente',
-                'PAGADA'
-            ),
-            (
-                'CAN',
-                'Factura cancelada',
-                'CANCELADA'
-            );
+        (
+            'BOR',
+            'Factura en borrador, puede agregar mas filas',
+            'BORRADOR'
+        ),
+        (
+            'EMI',
+            'Factura emitida al cliente',
+            'EMITIDA'
+        ),
+        (
+            'PAG',
+            'Factura pagada por el cliente',
+            'PAGADA'
+        ),
+        (
+            'CAN',
+            'Factura cancelada',
+            'CANCELADA'
+        );
 
         COMMIT TRANSACTION;
     END TRY
@@ -49,5 +49,6 @@ BEGIN
     END CATCH;
 END;
 GO
+    
 EXEC DBO.PR_INSERCION_ESTADOS_FACTURA;
 GO
