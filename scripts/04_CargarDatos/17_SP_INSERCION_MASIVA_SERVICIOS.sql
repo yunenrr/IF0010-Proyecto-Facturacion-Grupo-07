@@ -35,13 +35,14 @@ BEGIN
             1 AS ESTADO
         FROM N
         WHERE NOT EXISTS (
-            SELECT 1
+            SELECT
+                1
             FROM DBO.SERVICIOS AS S
-            WHERE S.COD_INTERNO
-                  = 'SERV' + RIGHT(
-                      '0000' + CAST(N.N AS VARCHAR(4)),
-                      4
-                  )
+            WHERE
+                S.COD_INTERNO = 'SERV' + RIGHT(
+                    '0000' + CAST(N.N AS VARCHAR(4)),
+                    4
+                )
         );
 
         COMMIT TRANSACTION;
