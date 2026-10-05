@@ -16,15 +16,22 @@ BEGIN
         IF TRIM(@NOMBRE) = '' OR @NOMBRE IS NULL
             THROW 51002, 'El nombre de la provincia es obligatorio.', 1;
 
-        IF EXISTS (
-            SELECT 1
-            FROM PROVINCIA
-            WHERE ID_PROVINCIA = @ID_PROVINCIA
-        )
-            THROW 51003, 'Ya existe una provincia con ese ID.', 1;
+        IF
+            EXISTS (
+                SELECT 1
+                FROM PROVINCIA
+                WHERE ID_PROVINCIA = @ID_PROVINCIA
+            )
+                THROW 51003, 'Ya existe una provincia con ese ID.', 1;
 
-        INSERT INTO PROVINCIA (ID_PROVINCIA, NOMBRE)
-        VALUES (@ID_PROVINCIA, TRIM(@NOMBRE));
+        INSERT INTO PROVINCIA (
+            ID_PROVINCIA,
+            NOMBRE
+        )
+        VALUES (
+            @ID_PROVINCIA,
+            TRIM(@NOMBRE)
+        );
 
     END TRY
     BEGIN CATCH
