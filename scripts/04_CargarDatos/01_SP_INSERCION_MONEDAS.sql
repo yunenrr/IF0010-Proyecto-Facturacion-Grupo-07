@@ -17,10 +17,10 @@ BEGIN
             SIMBOLO
         )
         VALUES
-            ('CRC', 'Colon costarricense', NCHAR(8353)),
-            ('USD', 'Dolar estadounidense', N'$'),
-            ('EUR', 'Euro', NCHAR(8364)),
-            ('MXN', 'Peso mexicano', N'$');
+        ('CRC', 'Colon costarricense', NCHAR(8353)),
+        ('USD', 'Dolar estadounidense', N'$'),
+        ('EUR', 'Euro', NCHAR(8364)),
+        ('MXN', 'Peso mexicano', N'$');
 
         COMMIT TRANSACTION;
     END TRY
