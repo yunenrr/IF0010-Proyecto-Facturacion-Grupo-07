@@ -1,0 +1,68 @@
+USE SISTEMADEFACTURACION;
+GO
+
+DECLARE @CONTADOR INT = 1;
+DECLARE @CEDULAGEN VARCHAR(20);
+DECLARE @NOMBREGEN VARCHAR(100);
+DECLARE @RAZONGEN VARCHAR(100);
+DECLARE @CORREOGEN VARCHAR(100);
+DECLARE @TELEFONOGEN VARCHAR(20);
+DECLARE @IDDIRECCIONVALIDO INT;
+DECLARE @IDSALIDA INT;
+
+SET NOCOUNT ON;
+
+WHILE @CONTADOR <= 100
+    BEGIN
+        SET @IDDIRECCIONVALIDO = @CONTADOR;
+
+        SET
+            @CEDULAGEN
+            = '3-101-'
+            + RIGHT(
+                '000000' + CAST(@CONTADOR AS VARCHAR(10)),
+                6
+            );
+
+        SET
+            @NOMBREGEN
+            = 'Empresa Pruebas S.A. '
+            + CAST(@CONTADOR AS VARCHAR(10));
+
+        SET
+            @RAZONGEN
+            = 'Corporación Comercial '
+            + CAST(@CONTADOR AS VARCHAR(10))
+            + ' Limitada';
+
+        SET
+            @CORREOGEN
+            = 'contacto'
+            + CAST(@CONTADOR AS VARCHAR(10))
+            + '@empresaprueba.com';
+
+        SET
+            @TELEFONOGEN
+            = '8000'
+            + RIGHT(
+                '0000' + CAST(@CONTADOR AS VARCHAR(10)),
+                4
+            );
+
+        EXEC DBO.PR_MIGRAREMPRESASEMISORAS
+            @CEDULA = @CEDULAGEN,
+            @NOMBRECOMERCIAL = @NOMBREGEN,
+            @RAZONSOCIAL = @RAZONGEN,
+            @INDICADOR = 1,
+            @CORREOELECTRONICO = @CORREOGEN,
+            @TELEFONO = @TELEFONOGEN,
+            @IDDIRECCION = @IDDIRECCIONVALIDO,
+            @IDEMPRESAGENERADO = @IDSALIDA OUTPUT;
+
+        SET @CONTADOR = @CONTADOR + 1;
+    END;
+
+PRINT
+'¡Proceso finalizado! Se han migrado las 100 empresas '
++ 'emisoras exitosamente en tiempo récord.';
+GO
