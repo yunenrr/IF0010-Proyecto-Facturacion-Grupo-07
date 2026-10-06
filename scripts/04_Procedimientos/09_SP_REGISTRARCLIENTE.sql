@@ -1,10 +1,11 @@
 USE SISTEMADEFACTURACION;
 GO
 
-IF EXISTS (SELECT 1 FROM SYS.OBJECTS WHERE NAME = 'PR_INSERTARCLIENTE' AND TYPE = 'P')
-BEGIN
-    DROP PROCEDURE DBO.PR_INSERTARCLIENTE;
-END
+IF EXISTS (SELECT 1 FROM SYS.OBJECTS 
+    WHERE NAME = 'PR_INSERTARCLIENTE' AND TYPE = 'P')
+    BEGIN
+        DROP PROCEDURE DBO.PR_INSERTARCLIENTE;
+    END
 GO
 
 CREATE OR ALTER PROCEDURE DBO.PR_INSERTARCLIENTE
@@ -21,40 +22,47 @@ BEGIN
 
     BEGIN TRY
         IF TRIM(@CEDULA) = '' OR @CEDULA IS NULL
-            THROW 50001, 
+            THROW 50001,
             'La cédula del cliente es obligatoria y no puede estar vacía.', 1;
 
         IF TRIM(@CORREO_ELECTRONICO) = '' OR @CORREO_ELECTRONICO IS NULL
-            THROW 50002, 
+            THROW 50002,
             'El correo electrónico del cliente es obligatorio.', 1;
 
         IF TRIM(@TELEFONO) = '' OR @TELEFONO IS NULL
-            THROW 50003, 
+            THROW 50003,
             'El teléfono del cliente es obligatorio.', 1;
 
         IF @ID_DIRECCION IS NULL
-            THROW 50004, 
+            THROW 50004,
             'Debe asociar una dirección válida al cliente.', 1;
 
-        IF NOT EXISTS (SELECT 1 FROM DIRECCION 
-            WHERE ID_DIRECCION = @ID_DIRECCION)
-            THROW 50005, 
-            'La dirección especificada no existe en el sistema.', 1;
+        IF 
+            NOT EXISTS (SELECT 1 FROM DIRECCION
+                WHERE ID_DIRECCION = @ID_DIRECCION)
+                THROW 50005,
+                'La dirección especificada no existe en el sistema.', 1;
 
-        IF EXISTS (SELECT 1 FROM CLIENTE 
-            WHERE CEDULA = @CEDULA)
-            THROW 50006, 
-            'Ya se encuentra registrado un cliente con el número de cédula indicado.', 1;
+        IF 
+            EXISTS (SELECT 1 FROM CLIENTE
+                WHERE CEDULA = @CEDULA)
+                THROW 50006,
+                'Ya se encuentra registrado un cliente con el número de cédula indicado.',
+                1;
 
-        IF EXISTS (SELECT 1 FROM CLIENTE 
-            WHERE CORREO_ELECTRONICO = @CORREO_ELECTRONICO)
-            THROW 50007, 
-            'El correo electrónico ingresado ya pertenece a otro cliente registrado.', 1;
+        IF 
+            EXISTS (SELECT 1 FROM CLIENTE
+                WHERE CORREO_ELECTRONICO = @CORREO_ELECTRONICO)
+                THROW 50007,
+                'El correo electrónico ingresado ya pertenece a otro cliente registrado.',
+                1;
 
-        IF EXISTS (SELECT 1 FROM CLIENTE 
-            WHERE ID_DIRECCION = @ID_DIRECCION)
-            THROW 50008, 
-            'La dirección indicada ya se encuentra asignada a otro cliente (relación 1 a 1).', 1;
+        IF 
+            EXISTS (SELECT 1 FROM CLIENTE 
+                WHERE ID_DIRECCION = @ID_DIRECCION)
+                THROW 50008,
+                'La dirección indicada ya se encuentra asignada a otro cliente (relación 1 a 1).',
+                1;
 
         INSERT INTO CLIENTE (
             CEDULA,
