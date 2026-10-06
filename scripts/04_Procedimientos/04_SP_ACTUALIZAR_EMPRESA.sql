@@ -4,15 +4,15 @@ GO
 IF EXISTS (
     SELECT 1
     FROM sys.objects
-    WHERE name = 'pr_ActualizarEmpresaEmisora'
-        AND type = 'P'
+    WHERE NAME = 'PR_ACTUALIZAREMPRESAEMISORA'
+        AND TYPE = 'P'
         )
 BEGIN
-    DROP PROCEDURE dbo.pr_ActualizarEmpresaEmisora;
+    DROP PROCEDURE DBO.PR_ACTUALIZAREMPRESAEMISORA;
 END;
 GO
 
-CREATE PROCEDURE dbo.pr_ActualizarEmpresaEmisora
+CREATE PROCEDURE DBO.PR_ACTUALIZAREMPRESAEMISORA
     @ID_EMPRESA INT,
     @CORREO_ELECTRONICO VARCHAR(100),
     @TELEFONO VARCHAR(20),
