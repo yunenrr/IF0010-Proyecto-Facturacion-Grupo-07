@@ -26,49 +26,50 @@ BEGIN
             OR @PORCENTAJE_IMPUESTO IS NULL
             OR @ESTADO IS NULL
         )
-        BEGIN
-            THROW 50030, 'No se permiten parámetros nulos', 1;
-        END;
+            BEGIN
+                THROW 50030, 'No se permiten parámetros nulos', 1;
+            END;
 
         -- VALIDAR QUE DESCRIPCION NO ESTE VACIA
         IF LEN(TRIM(@DESCRIPCION)) = 0
-        BEGIN
-            THROW 50031, 'Error. Descripción vacía', 1;
-        END;
+            BEGIN
+                THROW 50031, 'Error. Descripción vacía', 1;
+            END;
 
         -- VALIDAR QUE UNIDAD DE MEDIDA NO ESTE VACIA
         IF LEN(TRIM(@UNIDAD_MEDIDA)) = 0
-        BEGIN
-            THROW 50032, 'Error. Unidad de medida vacía', 1;
-        END;
+            BEGIN
+                THROW 50032, 'Error. Unidad de medida vacía', 1;
+            END;
 
         -- VALIDAR PRECIO MAYOR A 0
         IF @PRECIO_UNITARIO <= 0
-        BEGIN
-            THROW 50033, 'El precio debe ser mayor a cero', 1;
-        END;
+            BEGIN
+                THROW 50033, 'El precio debe ser mayor a cero', 1;
+            END;
 
         -- VALIDAR IMPUESTO ENTRE 0 Y 100
         IF (
             @PORCENTAJE_IMPUESTO < 0
             OR @PORCENTAJE_IMPUESTO > 100
         )
-        BEGIN
-            THROW
+            BEGIN
+                THROW
                 50034,
                 'El porcentaje de impuesto debe estar entre 0 y 100',
                 1;
-        END;
+            END;
 
         -- VALIDAR QUE EL SERVICIO EXISTA
-        IF NOT EXISTS (
-            SELECT 1
-            FROM DBO.SERVICIOS
-            WHERE ID_SERVICIO = @ID_SERVICIO
-        )
-        BEGIN
-            THROW 50035, 'El servicio no existe', 1;
-        END;
+        IF
+            NOT EXISTS (
+                SELECT 1
+                FROM DBO.SERVICIOS
+                WHERE ID_SERVICIO = @ID_SERVICIO
+            )
+            BEGIN
+                THROW 50035, 'El servicio no existe', 1;
+            END;
 
         -- ACTUALIZAR SERVICIO
         UPDATE DBO.SERVICIOS
@@ -84,9 +85,9 @@ BEGIN
     END TRY
     BEGIN CATCH
         IF XACT_STATE() <> 0
-        BEGIN
-            ROLLBACK TRANSACTION;
-        END;
+            BEGIN
+                ROLLBACK TRANSACTION;
+            END;
 
         THROW;
     END CATCH;
