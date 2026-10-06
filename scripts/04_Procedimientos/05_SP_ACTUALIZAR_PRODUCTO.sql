@@ -17,47 +17,51 @@ BEGIN
         BEGIN TRANSACTION;
 
         -- PARAMETROS NO NULOS
-        IF
+        IF (
             @ID_PRODUCTO IS NULL
             OR @DESCRIPCION IS NULL
             OR @PRECIO_UNITARIO IS NULL
             OR @PORCENTAJE_IMPUESTO IS NULL
             OR @ESTADO IS NULL
-        BEGIN
-            THROW 50010, 'No se permiten parámetros nulos', 1;
-        END;
+        )
+            BEGIN
+                THROW 50010, 'No se permiten parámetros nulos', 1;
+            END;
 
         -- VALIDAR QUE DESCRIPCION NO ESTE VACIA
         IF LEN(TRIM(@DESCRIPCION)) = 0
-        BEGIN
-            THROW 50011, 'Error. Descripción vacía', 1;
-        END;
+            BEGIN
+                THROW 50011, 'Error. Descripción vacía', 1;
+            END;
 
         -- PRECIO MAYOR A 0
         IF @PRECIO_UNITARIO <= 0
-        BEGIN
-            THROW 50012, 'El precio debe ser mayor a cero', 1;
-        END;
+            BEGIN
+                THROW 50012, 'El precio debe ser mayor a cero', 1;
+            END;
 
         -- IMPUESTO ENTRE 0 Y 100
-        IF
+        IF (
             @PORCENTAJE_IMPUESTO < 0
             OR @PORCENTAJE_IMPUESTO > 100
-        BEGIN
-            THROW 50013,
+        )
+            BEGIN
+                THROW
+                50013,
                 'El porcentaje de impuesto debe estar entre 0 y 100',
                 1;
-        END;
+            END;
 
         -- PRODUCTO EXISTENTE
-        IF NOT EXISTS (
-            SELECT 1
-            FROM DBO.PRODUCTOS
-            WHERE ID_PRODUCTO = @ID_PRODUCTO
-        )
-        BEGIN
-            THROW 50014, 'El producto no existe', 1;
-        END;
+        IF
+            NOT EXISTS (
+                SELECT 1
+                FROM DBO.PRODUCTOS
+                WHERE ID_PRODUCTO = @ID_PRODUCTO
+            )
+            BEGIN
+                THROW 50014, 'El producto no existe', 1;
+            END;
 
         UPDATE DBO.PRODUCTOS
         SET
@@ -71,9 +75,9 @@ BEGIN
     END TRY
     BEGIN CATCH
         IF XACT_STATE() <> 0
-        BEGIN
-            ROLLBACK TRANSACTION;
-        END;
+            BEGIN
+                ROLLBACK TRANSACTION;
+            END;
 
         THROW;
     END CATCH;
