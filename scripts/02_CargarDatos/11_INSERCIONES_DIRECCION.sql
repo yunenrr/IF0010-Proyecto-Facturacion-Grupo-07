@@ -121,30 +121,30 @@ DECLARE @ID_GENERADO INT;
 SELECT @MAX_ID_BASE = MAX(ID) FROM @DireccionesBase;
 
 WHILE @BLOQUE <= @TOTAL_BLOQUES
-BEGIN
-    SET @ID_BASE = 1;
-
-    WHILE @ID_BASE <= @MAX_ID_BASE
     BEGIN
-        SELECT
-            @DIRECCION_EXACTA = CONCAT(
-                '[Lote ',
-                CAST(@BLOQUE AS VARCHAR(10)),
-                '] ',
-                DIRECCION_EXACTA
-            ),
-            @ID_DISTRITO = ID_DISTRITO
-        FROM @DireccionesBase
-        WHERE ID = @ID_BASE;
+        SET @ID_BASE = 1;
 
-        EXEC DBO.PR_INSERTARDIRECCION
-            @DIRECCIONEXACTA = @DIRECCION_EXACTA,
-            @IDDISTRITO = @ID_DISTRITO,
-            @IDDIRECCIONGENERADO = @ID_GENERADO OUTPUT;
+        WHILE @ID_BASE <= @MAX_ID_BASE
+            BEGIN
+                SELECT
+                    @DIRECCION_EXACTA = CONCAT(
+                        '[Lote ',
+                        CAST(@BLOQUE AS VARCHAR(10)),
+                        '] ',
+                        DIRECCION_EXACTA
+                    ),
+                    @ID_DISTRITO = ID_DISTRITO
+                FROM @DireccionesBase
+                WHERE ID = @ID_BASE;
 
-        SET @ID_BASE = @ID_BASE + 1;
+                EXEC DBO.PR_INSERTARDIRECCION
+                    @DIRECCIONEXACTA = @DIRECCION_EXACTA,
+                    @IDDISTRITO = @ID_DISTRITO,
+                    @IDDIRECCIONGENERADO = @ID_GENERADO OUTPUT;
+
+                SET @ID_BASE = @ID_BASE + 1;
+            END;
+
+        SET @BLOQUE = @BLOQUE + 1;
     END;
-
-    SET @BLOQUE = @BLOQUE + 1;
-END;
 GO
