@@ -1,48 +1,60 @@
 USE SISTEMADEFACTURACION;
 GO
 
-IF EXISTS (SELECT 1 FROM sys.objects WHERE name = 'pr_InsertarCliente' AND type = 'P')
+IF EXISTS (SELECT 1 FROM SYS.OBJECTS WHERE NAME = 'PR_INSERTARCLIENTE' AND TYPE = 'P')
 BEGIN
-    DROP PROCEDURE dbo.pr_InsertarCliente;
+    DROP PROCEDURE DBO.PR_INSERTARCLIENTE;
 END
 GO
 
-CREATE OR ALTER PROCEDURE dbo.pr_InsertarCliente
-    @Cedula VARCHAR(20),
-    @NombreRazonSocial VARCHAR(100) = 'No aplica',
-    @CorreoElectronico VARCHAR(100),
-    @Telefono VARCHAR(20),
-    @IdDireccion INT,
-    @IdClienteGenerado INT OUTPUT
+CREATE OR ALTER PROCEDURE DBO.PR_INSERTARCLIENTE
+    @CEDULA VARCHAR(20),
+    @NOMBRE_RAZON_SOCIAL VARCHAR(100) = 'No aplica',
+    @CORREO_ELECTRONICO VARCHAR(100),
+    @TELEFONO VARCHAR(20),
+    @ID_DIRECCION INT,
+    @ID_CLIENTE_GENERADO INT OUTPUT
 AS
 BEGIN
     SET XACT_ABORT ON;
     SET NOCOUNT ON;
 
     BEGIN TRY
-        IF TRIM(@Cedula) = '' OR @Cedula IS NULL
-            THROW 50001, 'La cédula del cliente es obligatoria y no puede estar vacía.', 1;
+        IF TRIM(@CEDULA) = '' OR @CEDULA IS NULL
+            THROW 50001, 
+            'La cédula del cliente es obligatoria y no puede estar vacía.', 1;
 
-        IF TRIM(@CorreoElectronico) = '' OR @CorreoElectronico IS NULL
-            THROW 50002, 'El correo electrónico del cliente es obligatorio.', 1;
+        IF TRIM(@CORREO_ELECTRONICO) = '' OR @CORREO_ELECTRONICO IS NULL
+            THROW 50002, 
+            'El correo electrónico del cliente es obligatorio.', 1;
 
-        IF TRIM(@Telefono) = '' OR @Telefono IS NULL
-            THROW 50003, 'El teléfono del cliente es obligatorio.', 1;
+        IF TRIM(@TELEFONO) = '' OR @TELEFONO IS NULL
+            THROW 50003, 
+            'El teléfono del cliente es obligatorio.', 1;
 
-        IF @IdDireccion IS NULL
-            THROW 50004, 'Debe asociar una dirección válida al cliente.', 1;
+        IF @ID_DIRECCION IS NULL
+            THROW 50004, 
+            'Debe asociar una dirección válida al cliente.', 1;
 
-        IF NOT EXISTS (SELECT 1 FROM DIRECCION WHERE ID_DIRECCION = @IdDireccion)
-            THROW 50005, 'La dirección especificada no existe en el sistema.', 1;
+        IF NOT EXISTS (SELECT 1 FROM DIRECCION 
+            WHERE ID_DIRECCION = @ID_DIRECCION)
+            THROW 50005, 
+            'La dirección especificada no existe en el sistema.', 1;
 
-        IF EXISTS (SELECT 1 FROM CLIENTE WHERE CEDULA = @Cedula)
-            THROW 50006, 'Ya se encuentra registrado un cliente con el número de cédula indicado.', 1;
+        IF EXISTS (SELECT 1 FROM CLIENTE 
+            WHERE CEDULA = @CEDULA)
+            THROW 50006, 
+            'Ya se encuentra registrado un cliente con el número de cédula indicado.', 1;
 
-        IF EXISTS (SELECT 1 FROM CLIENTE WHERE CORREO_ELECTRONICO = @CorreoElectronico)
-            THROW 50007, 'El correo electrónico ingresado ya pertenece a otro cliente registrado.', 1;
+        IF EXISTS (SELECT 1 FROM CLIENTE 
+            WHERE CORREO_ELECTRONICO = @CORREO_ELECTRONICO)
+            THROW 50007, 
+            'El correo electrónico ingresado ya pertenece a otro cliente registrado.', 1;
 
-        IF EXISTS (SELECT 1 FROM CLIENTE WHERE ID_DIRECCION = @IdDireccion)
-            THROW 50008, 'La dirección indicada ya se encuentra asignada a otro cliente (relación 1 a 1).', 1;
+        IF EXISTS (SELECT 1 FROM CLIENTE 
+            WHERE ID_DIRECCION = @ID_DIRECCION)
+            THROW 50008, 
+            'La dirección indicada ya se encuentra asignada a otro cliente (relación 1 a 1).', 1;
 
         INSERT INTO CLIENTE (
             CEDULA,
@@ -54,27 +66,27 @@ BEGIN
             ID_DIRECCION
         )
         VALUES (
-            TRIM(@Cedula),
-            ISNULL(NULLIF(TRIM(@NombreRazonSocial), ''), 'No aplica'),
-            LOWER(TRIM(@CorreoElectronico)),
-            TRIM(@Telefono),
+            TRIM(@CEDULA),
+            ISNULL(NULLIF(TRIM(@NOMBRE_RAZON_SOCIAL), ''), 'No aplica'),
+            LOWER(TRIM(@CORREO_ELECTRONICO)),
+            TRIM(@TELEFONO),
             GETDATE(),
             GETDATE(),
-            @IdDireccion
+            @ID_DIRECCION
         );
 
-        SET @IdClienteGenerado = SCOPE_IDENTITY();
+        SET @ID_CLIENTE_GENERADO = SCOPE_IDENTITY();
 
     END TRY
     BEGIN CATCH
-        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
-        DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
-        DECLARE @ErrorState INT = ERROR_STATE();
+        DECLARE @ERROR_MESSAGE NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ERROR_SEVERITY INT = ERROR_SEVERITY();
+        DECLARE @ERROR_STATE INT = ERROR_STATE();
 
-        IF @ErrorSeverity < 16
-            SET @ErrorSeverity = 16;
+        IF @ERROR_SEVERITY < 16
+            SET @ERROR_SEVERITY = 16;
 
-        RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);
+        RAISERROR (@ERROR_MESSAGE, @ERROR_SEVERITY, @ERROR_STATE);
         RETURN -1;
     END CATCH;
 
