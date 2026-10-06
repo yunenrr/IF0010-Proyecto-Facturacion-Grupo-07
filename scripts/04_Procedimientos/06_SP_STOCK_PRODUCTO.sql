@@ -19,15 +19,20 @@ BEGIN
         BEGIN TRANSACTION;
 
         -- PARAMETROS NO NULOS
-        IF
+        IF (
             @ID_PRODUCTO IS NULL
             OR @CANTIDAD IS NULL
             OR @TIPO_MOVIMIENTO IS NULL
-        THROW 50020, 'No se permiten parámetros nulos', 1;
+        )
+        BEGIN
+            THROW 50020, 'No se permiten parámetros nulos', 1;
+        END;
 
         -- VALIDAR CANTIDAD MAYOR A 0
         IF @CANTIDAD <= 0
+        BEGIN
             THROW 50021, 'La cantidad debe ser mayor a cero.', 1;
+        END;
 
         -- OBTENER STOCK ACTUAL
         SELECT
@@ -38,13 +43,18 @@ BEGIN
 
         -- VALIDAR QUE EL PRODUCTO EXISTA
         IF @@ROWCOUNT = 0
+        BEGIN
             THROW 50022, 'El producto no existe.', 1;
+        END;
 
         -- VALIDAR DISPONIBILIDAD PARA SALIDA
-        IF
+        IF (
             @TIPO_MOVIMIENTO = 0
             AND @ESTADO_PRODUCTO = 0
-        THROW 50023, 'El producto no está disponible.', 1;
+        )
+        BEGIN
+            THROW 50023, 'El producto no está disponible.', 1;
+        END;
 
         -- CALCULAR STOCK NUEVO
         IF @TIPO_MOVIMIENTO = 1
@@ -54,7 +64,9 @@ BEGIN
         ELSE
         BEGIN
             IF @STOCK_ACTUAL < @CANTIDAD
+            BEGIN
                 THROW 50024, 'No hay esa cantidad de productos', 1;
+            END;
 
             SET @STOCK_NUEVO = @STOCK_ACTUAL - @CANTIDAD;
         END;
@@ -67,13 +79,17 @@ BEGIN
             AND STOCK = @STOCK_ACTUAL;
 
         IF @@ROWCOUNT = 0
+        BEGIN
             THROW 50025, 'No se pudo actualizar el stock.', 1;
+        END;
 
         COMMIT TRANSACTION;
     END TRY
     BEGIN CATCH
         IF XACT_STATE() <> 0
+        BEGIN
             ROLLBACK TRANSACTION;
+        END;
 
         THROW;
     END CATCH;
