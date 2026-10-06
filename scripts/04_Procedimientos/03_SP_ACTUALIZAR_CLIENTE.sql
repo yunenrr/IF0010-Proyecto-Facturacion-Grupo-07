@@ -4,15 +4,15 @@ GO
 IF EXISTS (
     SELECT 1
     FROM sys.objects
-    WHERE name = 'pr_ActualizarCliente'
-        AND type = 'P'
+    WHERE NAME = 'PR_ACTUALIZARCLIENTE'
+        AND TYPE = 'P'
     )
 BEGIN
-    DROP PROCEDURE dbo.pr_ActualizarCliente;
+    DROP PROCEDURE DBO.PR_ACTUALIZARCLIENTE;
 END
 GO
 
-CREATE PROCEDURE dbo.pr_ActualizarCliente
+CREATE PROCEDURE DBO.PR_ACTUALIZARCLIENTE
     @ID_CLIENTE INT,
     @CORREO_ELECTRONICO VARCHAR(100),
     @TELEFONO VARCHAR(20),
@@ -25,7 +25,6 @@ BEGIN
     BEGIN TRY
         BEGIN TRANSACTION;
 
-        -- Validaciones de duplicados
         IF EXISTS (SELECT 1 FROM dbo.Cliente 
                    WHERE CORREO_ELECTRONICO = @CORREO_ELECTRONICO
                      AND ID_CLIENTE <> @ID_CLIENTE)
@@ -41,7 +40,6 @@ BEGIN
                      AND ID_CLIENTE <> @ID_CLIENTE)
             THROW 50012, 'La dirección ya está asignada a otro cliente.', 1;
 
-        -- Actualización
         UPDATE dbo.Cliente
         SET CORREO_ELECTRONICO = @CORREO_ELECTRONICO,
             TELEFONO = @TELEFONO,
