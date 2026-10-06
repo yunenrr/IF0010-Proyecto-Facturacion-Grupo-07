@@ -19,10 +19,11 @@ BEGIN
         BEGIN TRANSACTION;
 
         -- PARAMETROS NO NULOS
-        IF @ID_PRODUCTO IS NULL
+        IF
+            @ID_PRODUCTO IS NULL
             OR @CANTIDAD IS NULL
             OR @TIPO_MOVIMIENTO IS NULL
-            THROW 50020, 'No se permiten parámetros nulos', 1;
+        THROW 50020, 'No se permiten parámetros nulos', 1;
 
         -- VALIDAR CANTIDAD MAYOR A 0
         IF @CANTIDAD <= 0
@@ -40,9 +41,10 @@ BEGIN
             THROW 50022, 'El producto no existe.', 1;
 
         -- VALIDAR DISPONIBILIDAD PARA SALIDA
-        IF @TIPO_MOVIMIENTO = 0
+        IF
+            @TIPO_MOVIMIENTO = 0
             AND @ESTADO_PRODUCTO = 0
-            THROW 50023, 'El producto no está disponible.', 1;
+        THROW 50023, 'El producto no está disponible.', 1;
 
         -- CALCULAR STOCK NUEVO
         IF @TIPO_MOVIMIENTO = 1
@@ -60,7 +62,8 @@ BEGIN
         -- ACTUALIZAR STOCK
         UPDATE DBO.PRODUCTOS
         SET STOCK = @STOCK_NUEVO
-        WHERE ID_PRODUCTO = @ID_PRODUCTO
+        WHERE
+            ID_PRODUCTO = @ID_PRODUCTO
             AND STOCK = @STOCK_ACTUAL;
 
         IF @@ROWCOUNT = 0
