@@ -1,12 +1,14 @@
 USE SISTEMADEFACTURACION;
 GO
 
-IF 
-	EXISTS (SELECT 1 FROM SYS.OBJECTS
-	WHERE NAME = 'PR_INSERTAREMPRESAEMISORA' AND TYPE = 'P')
-		BEGIN
-			DROP PROCEDURE DBO.PR_INSERTAREMPRESAEMISORA;
-		END
+IF
+    EXISTS (
+        SELECT 1 FROM SYS.OBJECTS
+        WHERE NAME = 'PR_INSERTAREMPRESAEMISORA' AND TYPE = 'P'
+    )
+    BEGIN
+        DROP PROCEDURE DBO.PR_INSERTAREMPRESAEMISORA;
+    END
 GO
 
 CREATE OR ALTER PROCEDURE DBO.PR_INSERTAREMPRESAEMISORA
@@ -26,34 +28,41 @@ BEGIN
     BEGIN TRY
         IF TRIM(@CEDULA) = '' OR @CEDULA IS NULL
             THROW 50001,
-				'La cédula de la empresa es obligatoria y no puede estar vacía.', 1;
+            'La cédula de la empresa es obligatoria y no puede estar vacía.', 1;
 
         IF TRIM(@RAZONSOCIAL) = '' OR @RAZONSOCIAL IS NULL
             THROW 50002,
-				'La razón social de la empresa es obligatoria.', 1;
+            'La razón social de la empresa es obligatoria.', 1;
 
         IF @IDDIRECCION IS NULL
             THROW 50003,
-				'Debe asociar una dirección válida a la empresa.', 1;
+            'Debe asociar una dirección válida a la empresa.', 1;
 
-        IF 
-			NOT EXISTS (SELECT 1 FROM DIRECCION
-			WHERE ID_DIRECCION = @IDDIRECCION)
-            	THROW 50004,
-				'La dirección especificada no existe en el sistema.', 1;
+        IF
+            NOT EXISTS (
+                SELECT 1 FROM DIRECCION
+                WHERE ID_DIRECCION = @IDDIRECCION
+            )
+            THROW 50004,
+            'La dirección especificada no existe en el sistema.', 1;
 
-        IF 
-			EXISTS (SELECT 1 FROM EMPRESA_EMISORA
-			WHERE CEDULA = @CEDULA)
-            	THROW 50005,
-				'Ya se encuentra registrada una empresa con el número de cédula indicado.',
-				1;
+        IF
+            EXISTS (
+                SELECT 1 FROM EMPRESA_EMISORA
+                WHERE CEDULA = @CEDULA
+            )
+            THROW 50005,
+            'Ya se encuentra registrada una empresa con el número de cédula indicado.', -- noqa: LT05
+            1;
 
-        IF 
-			EXISTS (SELECT 1 FROM EMPRESA_EMISORA
-			WHERE CORREO_ELECTRONICO = @CORREOELECTRONICO)
-            	THROW 50006,
-				'El correo electrónico ingresado ya pertenece a otra empresa registrada.', 1;
+        IF
+            EXISTS (
+                SELECT 1 FROM EMPRESA_EMISORA
+                WHERE CORREO_ELECTRONICO = @CORREOELECTRONICO
+            )
+            THROW 50006,
+            'El correo electrónico ingresado ya pertenece a otra empresa registrada.', -- noqa: LT05
+            1;
 
         INSERT INTO EMPRESA_EMISORA (
             CEDULA,
