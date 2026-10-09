@@ -23,7 +23,6 @@ BEGIN
     DECLARE @NUEVO_ESTADO NVARCHAR(MAX);
 
     BEGIN TRY
-        
         SET @COD_INTERNO = UPPER(TRIM(@COD_INTERNO));
         SET @DESCRIPCION = TRIM(@DESCRIPCION);
         SET @UNIDAD_MEDIDA = TRIM(@UNIDAD_MEDIDA);
@@ -31,7 +30,6 @@ BEGIN
         IF @ESTADO IS NULL
             SET @ESTADO = 1;
 
-        
         IF @COD_INTERNO IS NULL OR LEN(@COD_INTERNO) = 0
             THROW 54001, 'El codigo interno es obligatorio.', 1;
 
@@ -86,7 +84,6 @@ BEGIN
 
         BEGIN TRANSACTION;
 
-       
         IF
             EXISTS (
                 SELECT 1
