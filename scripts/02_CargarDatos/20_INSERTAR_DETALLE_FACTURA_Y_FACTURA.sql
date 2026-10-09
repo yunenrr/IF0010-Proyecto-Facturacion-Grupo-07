@@ -51,21 +51,43 @@ SELECT
 INTO #TIPOS
 FROM TIPO_DOCUMENTO;
 
-SELECT TOP (3)
-    CAST(
-        ROW_NUMBER() OVER (ORDER BY ID_PRODUCTO) AS INT
-    ) AS NUMERO_CORRELATIVO,
-    ID_PRODUCTO,
-    DESCRIPCION,
-    PRECIO_UNITARIO,
-    PORCENTAJE_IMPUESTO,
-    CAST(
-        ROW_NUMBER() OVER (ORDER BY ID_PRODUCTO) AS DECIMAL(18, 2)
-    ) AS CANTIDAD
+WITH P AS (
+    SELECT TOP (3)
+        CAST(
+            ROW_NUMBER() OVER (ORDER BY ID_PRODUCTO) AS INT
+        ) AS NUMERO_CORRELATIVO,
+        ID_PRODUCTO,
+        DESCRIPCION,
+        PRECIO_UNITARIO,
+        PORCENTAJE_IMPUESTO
+    FROM PRODUCTOS
+    WHERE ESTADO = 1
+    ORDER BY ID_PRODUCTO
+),
+
+S AS (
+    SELECT TOP (3)
+        CAST(
+            ROW_NUMBER() OVER (ORDER BY ID_SERVICIO) AS INT
+        ) AS N,
+        ID_SERVICIO
+    FROM SERVICIOS
+    WHERE ESTADO = 1
+    ORDER BY ID_SERVICIO
+)
+
+SELECT
+    P.NUMERO_CORRELATIVO,
+    P.ID_PRODUCTO,
+    S.ID_SERVICIO,
+    P.DESCRIPCION,
+    P.PRECIO_UNITARIO,
+    P.PORCENTAJE_IMPUESTO,
+    CAST(P.NUMERO_CORRELATIVO AS DECIMAL(18, 2)) AS CANTIDAD
 INTO #ITEMS
-FROM PRODUCTOS
-WHERE ESTADO = 1
-ORDER BY ID_PRODUCTO;
+FROM P
+INNER JOIN S
+    ON P.NUMERO_CORRELATIVO = S.N;
 
 DECLARE @N_EMPRESAS INT = (SELECT COUNT(*) FROM #EMPRESAS);
 DECLARE @N_CLIENTES INT = (SELECT COUNT(*) FROM #CLIENTES);
@@ -94,7 +116,7 @@ IF @N_EMPRESAS = 0 OR @N_CLIENTES = 0 OR @N_MONEDAS = 0 OR @N_TIPOS = 0
 IF @N_ITEMS < 3
     BEGIN
         RAISERROR (
-            'Se necesitan al menos 3 productos activos para los detalles.',
+            'Se necesitan al menos 3 productos y 3 servicios activos.',
             16, 1
         );
         RETURN;
@@ -202,7 +224,8 @@ SELECT
     I.CANTIDAD,
     I.PRECIO_UNITARIO,
     I.PORCENTAJE_IMPUESTO,
-    I.ID_PRODUCTO
+    I.ID_PRODUCTO,
+    I.ID_SERVICIO
 INTO #DET
 FROM #FACT AS F
 CROSS JOIN #ITEMS AS I;
@@ -334,6 +357,7 @@ IF @COD = 0
         DECLARE @D_PRECIO DECIMAL(18, 2);
         DECLARE @D_IMP DECIMAL(5, 2);
         DECLARE @D_PROD INT;
+        DECLARE @D_SERV INT;
 
         DECLARE CUR_DETALLES CURSOR LOCAL FAST_FORWARD FOR
         SELECT
@@ -343,13 +367,15 @@ IF @COD = 0
             CANTIDAD,
             PRECIO_UNITARIO,
             PORCENTAJE_IMPUESTO,
-            ID_PRODUCTO
+            ID_PRODUCTO,
+            ID_SERVICIO
         FROM #DET
         ORDER BY N, NUMERO_CORRELATIVO;
 
         OPEN CUR_DETALLES;
         FETCH NEXT FROM CUR_DETALLES INTO
-        @D_ID, @D_CORR, @D_DESC, @D_CANT, @D_PRECIO, @D_IMP, @D_PROD;
+        @D_ID, @D_CORR, @D_DESC, @D_CANT,
+        @D_PRECIO, @D_IMP, @D_PROD, @D_SERV;
 
         SET @CONTADOR = 0;
         BEGIN TRANSACTION;
@@ -364,6 +390,7 @@ IF @COD = 0
                     @PRECIO_UNITARIO = @D_PRECIO,
                     @PORCENTAJE_IMPUESTO = @D_IMP,
                     @ID_PRODUCTO = @D_PROD,
+                    @ID_SERVICIO = @D_SERV,
                     @CODIGO_ERROR = @COD OUTPUT,
                     @MENSAJE = @MSG OUTPUT;
 
@@ -376,7 +403,8 @@ IF @COD = 0
                     END;
 
                 FETCH NEXT FROM CUR_DETALLES INTO
-                @D_ID, @D_CORR, @D_DESC, @D_CANT, @D_PRECIO, @D_IMP, @D_PROD;
+                @D_ID, @D_CORR, @D_DESC, @D_CANT,
+                @D_PRECIO, @D_IMP, @D_PROD, @D_SERV;
             END;
 
         CLOSE CUR_DETALLES;
