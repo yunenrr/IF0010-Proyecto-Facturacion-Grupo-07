@@ -16,19 +16,12 @@ BEGIN
     BEGIN TRY
         BEGIN TRANSACTION;
 
-        -- VALIDACIÓN: PRECIO POSITIVO
         IF (@PRECIOUNITARIO <= 0)
             THROW 60001, 'El precio debe ser mayor a cero.', 1;
-
-        -- VALIDACIÓN: IMPUESTO NO NEGATIVO
         IF (@PORCENTAJEIMPUESTO < 0)
-            THROW 60002, 'El impuesto no debe ser negativo.', 1;
-
-        -- VALIDACIÓN: STOCK NO NEGATIVO
+            THROW 60002, 'El impuesto no puede ser negativo.', 1;
         IF (@STOCK < 0)
-            THROW 60003, 'El .', 1;
-
-        -- VALIDACIÓN: CÓDIGO INTERNO ÚNICO
+            THROW 60003, 'El stock no puede ser negativo.', 1;
         IF EXISTS (SELECT 1 FROM DBO.PRODUCTOS WHERE COD_INTERNO = @CODINTERNO)
             THROW 60004, 'EL CÓDIGO INTERNO YA EXISTE.', 1;
 
