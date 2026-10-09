@@ -29,7 +29,10 @@ BEGIN
             'SERV' + RIGHT('0000' + CAST(N.N AS VARCHAR(4)), 4) AS COD_INTERNO,
             'Servicio de prueba ' + CAST(N.N AS VARCHAR(4)) AS DESCRIPCION,
             CAST(5000.00 + (N.N * 100) AS DECIMAL(10, 2)) AS PRECIO_UNITARIO,
-            'Unidad' AS UNIDAD_MEDIDA,
+            CHOOSE(
+                (N.N % 6) + 1,
+                'Unidad', 'Hora', 'Clase', 'Mes', 'Sesion', 'Proyecto'
+            ) + ' ' + CAST(N.N AS VARCHAR(4)) AS UNIDAD_MEDIDA,
             13.00 AS PORCENTAJE_IMPUESTO,
             1 AS ESTADO
         FROM N
