@@ -26,6 +26,7 @@ BEGIN
     SET NOCOUNT ON;
 
     BEGIN TRY
+        BEGIN TRANSACTION;
         IF TRIM(@CEDULA) = '' OR @CEDULA IS NULL
             THROW 50001,
             'La cédula de la empresa es obligatoria y no puede estar vacía.', 1;
@@ -86,9 +87,11 @@ BEGIN
         );
 
         SET @IDEMPRESAGENERADO = SCOPE_IDENTITY();
-
+        COMMIT TRANSACTION;
     END TRY
     BEGIN CATCH
+        IF XACT_STATE() <> 0
+            ROLLBACK TRANSACTION;
         DECLARE @ERRORMESSAGE NVARCHAR(4000) = ERROR_MESSAGE();
         DECLARE @ERRORSEVERITY INT = ERROR_SEVERITY();
         DECLARE @ERRORSTATE INT = ERROR_STATE();
