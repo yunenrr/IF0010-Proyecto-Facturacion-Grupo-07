@@ -24,6 +24,7 @@ BEGIN
     SET NOCOUNT ON;
 
     BEGIN TRY
+        BEGIN TRANSACTION;
         IF TRIM(@CEDULA) = '' OR @CEDULA IS NULL
             THROW 50001,
             'La cédula del cliente es obligatoria y no puede estar vacía.', 1;
@@ -95,9 +96,12 @@ BEGIN
         );
 
         SET @ID_CLIENTE_GENERADO = SCOPE_IDENTITY();
+        COMMIT TRANSACTION;
 
     END TRY
     BEGIN CATCH
+        IF XACT_STATE() <> 0
+            ROLLBACK TRANSACTION;
         DECLARE @ERROR_MESSAGE NVARCHAR(4000) = ERROR_MESSAGE();
         DECLARE @ERROR_SEVERITY INT = ERROR_SEVERITY();
         DECLARE @ERROR_STATE INT = ERROR_STATE();
