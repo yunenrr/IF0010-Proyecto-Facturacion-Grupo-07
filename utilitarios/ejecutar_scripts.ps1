@@ -7,11 +7,12 @@ param(
 $ErrorActionPreference = 'Stop'
 
 $sqlcmd = Get-Command sqlcmd -ErrorAction Stop
-$scripts = Get-ChildItem -Path $PSScriptRoot -Recurse -File -Filter '*.sql' |
+$scriptsRoot = Join-Path (Split-Path -Parent $PSScriptRoot) 'scripts'
+$scripts = Get-ChildItem -Path $scriptsRoot -Recurse -File -Filter '*.sql' |
     Sort-Object -Property FullName
 
 if (-not $scripts) {
-    throw "No se encontraron archivos SQL en '$PSScriptRoot'."
+    throw "No se encontraron archivos SQL en '$scriptsRoot'."
 }
 if ($StartAt -lt 1 -or $StartAt -gt $scripts.Count) {
     throw "StartAt debe estar entre 1 y $($scripts.Count)."
@@ -27,7 +28,7 @@ try {
 
     for ($index = $StartAt - 1; $index -lt $scripts.Count; $index++) {
         $script = $scripts[$index]
-        $relativePath = $script.FullName.Substring($PSScriptRoot.Length + 1)
+        $relativePath = $script.FullName.Substring($scriptsRoot.Length + 1)
         Write-Host "[$($index + 1)/$($scripts.Count)] $relativePath"
 
         & $sqlcmd.Source -S $Server -U $Username -b -r 1 -C -f 'i:65001' -i $script.FullName
