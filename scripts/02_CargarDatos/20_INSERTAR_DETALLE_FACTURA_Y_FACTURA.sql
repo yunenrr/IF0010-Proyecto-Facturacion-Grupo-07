@@ -140,13 +140,7 @@ DECLARE @INICIO DATETIME = DATEADD(YEAR, -1, @AHORA);
 DECLARE @PASO INT = DATEDIFF(SECOND, @INICIO, @AHORA) / @CANT_FACTURAS;
 
 IF @PASO < 1
-    BEGIN
-        RAISERROR (
-            'Demasiadas facturas para repartirlas en un anio sin repetir identificadores.',  -- noqa: LT05
-            16, 1
-        );
-        RETURN;
-    END;
+    SET @PASO = 1;
 
 SELECT TOP (@CANT_FACTURAS)
     CAST(ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS INT) AS N,
@@ -163,7 +157,7 @@ FROM SYS.ALL_OBJECTS AS A
 CROSS JOIN SYS.ALL_OBJECTS AS B;
 
 -- noqa: disable=ST05
-SELECT
+SELECT  -- noqa: ST06
     B.N,
     X.TS AS FECHA_HORA,
     EM.ID_EMPRESA,
@@ -179,7 +173,8 @@ SELECT
     ) AS MONTO_TOTAL,
     CONVERT(CHAR(8), X.TS, 112)
     + REPLACE(CONVERT(CHAR(8), X.TS, 108), ':', '')
-    + '-' + TI.COD_TIPO AS IDENTIFICADOR
+    + '-' + TI.COD_TIPO AS IDENTIFICADOR_COMPROBANTE,
+    CAST(NULL AS INT) AS ID_FACTURA
 INTO #FACT
 FROM #BASE AS B
 CROSS APPLY (
@@ -215,20 +210,8 @@ INNER JOIN ESTADO_FACTURA AS E
     END;
 -- noqa: enable=ST05
 
--- 3. Detalles: cada factura lleva los mismos 3 items (3 lineas por factura)
-SELECT
-    F.N,
-    F.IDENTIFICADOR,
-    I.NUMERO_CORRELATIVO,
-    I.DESCRIPCION,
-    I.CANTIDAD,
-    I.PRECIO_UNITARIO,
-    I.PORCENTAJE_IMPUESTO,
-    I.ID_PRODUCTO,
-    I.ID_SERVICIO
-INTO #DET
-FROM #FACT AS F
-CROSS JOIN #ITEMS AS I;
+-- Indice para que el UPDATE por N sea una busqueda y no un escaneo
+CREATE CLUSTERED INDEX IX_FACT_N ON #FACT (N);
 
 PRINT 'Datos generados en temporales: '
 + CAST(
@@ -263,7 +246,9 @@ FROM #INDICES;
 IF @SQL IS NOT NULL
     EXEC SP_EXECUTESQL @SQL;
 
-DECLARE @F_ID VARCHAR(50);
+DECLARE @F_ID INT;
+DECLARE @F_N INT;
+DECLARE @F_COMP VARCHAR(50);
 DECLARE @F_FECHA DATE;
 DECLARE @F_EMP INT;
 DECLARE @F_CLI INT;
@@ -276,8 +261,9 @@ DECLARE @F_IMP DECIMAL(18, 2);
 DECLARE @F_MONTO DECIMAL(18, 2);
 
 DECLARE CUR_FACTURAS CURSOR LOCAL FAST_FORWARD FOR
-SELECT  -- noqa: ST06
-    IDENTIFICADOR,
+SELECT
+    N,
+    IDENTIFICADOR_COMPROBANTE,
     CAST(FECHA_HORA AS DATE) AS FECHA_EMISION,
     ID_EMPRESA,
     ID_CLIENTE,
@@ -293,7 +279,7 @@ ORDER BY N;
 
 OPEN CUR_FACTURAS;
 FETCH NEXT FROM CUR_FACTURAS INTO
-@F_ID, @F_FECHA, @F_EMP, @F_CLI, @F_MON,
+@F_N, @F_COMP, @F_FECHA, @F_EMP, @F_CLI, @F_MON,
 @F_TIPO, @F_EST, @F_SUB, @F_DESC, @F_IMP, @F_MONTO;
 
 SET @CONTADOR = 0;
@@ -307,6 +293,7 @@ WHILE @@FETCH_STATUS = 0 AND @COD = 0
             @COD_MONEDA = @F_MON,
             @COD_TIPO = @F_TIPO,
             @COD_ESTADO = @F_EST,
+            @IDENTIFICADOR_COMPROBANTE = @F_COMP,
             @FECHA_EMISION = @F_FECHA,
             @SUBTOTAL = @F_SUB,
             @TOTAL_DESCUENTOS = @F_DESC,
@@ -315,6 +302,11 @@ WHILE @@FETCH_STATUS = 0 AND @COD = 0
             @IDENTIFICADOR = @F_ID OUTPUT,
             @CODIGO_ERROR = @COD OUTPUT,
             @MENSAJE = @MSG OUTPUT;
+
+        IF @COD = 0
+            UPDATE #FACT
+            SET ID_FACTURA = @F_ID
+            WHERE N = @F_N;
 
         SET @CONTADOR = @CONTADOR + 1;
 
@@ -325,7 +317,7 @@ WHILE @@FETCH_STATUS = 0 AND @COD = 0
             END;
 
         FETCH NEXT FROM CUR_FACTURAS INTO
-        @F_ID, @F_FECHA, @F_EMP, @F_CLI, @F_MON,
+        @F_N, @F_COMP, @F_FECHA, @F_EMP, @F_CLI, @F_MON,
         @F_TIPO, @F_EST, @F_SUB, @F_DESC, @F_IMP, @F_MONTO;
     END;
 
@@ -350,7 +342,22 @@ SET @T = SYSDATETIME();
 
 IF @COD = 0
     BEGIN
-        DECLARE @D_ID VARCHAR(50);
+        SELECT
+            F.ID_FACTURA,
+            F.N,
+            I.NUMERO_CORRELATIVO,
+            I.DESCRIPCION,
+            I.CANTIDAD,
+            I.PRECIO_UNITARIO,
+            I.PORCENTAJE_IMPUESTO,
+            I.ID_PRODUCTO,
+            I.ID_SERVICIO
+        INTO #DET
+        FROM #FACT AS F
+        CROSS JOIN #ITEMS AS I
+        WHERE F.ID_FACTURA IS NOT NULL;
+
+        DECLARE @D_ID INT;
         DECLARE @D_CORR INT;
         DECLARE @D_DESC NVARCHAR(255);
         DECLARE @D_CANT DECIMAL(18, 2);
@@ -361,7 +368,7 @@ IF @COD = 0
 
         DECLARE CUR_DETALLES CURSOR LOCAL FAST_FORWARD FOR
         SELECT
-            IDENTIFICADOR,
+            ID_FACTURA,
             NUMERO_CORRELATIVO,
             DESCRIPCION,
             CANTIDAD,
