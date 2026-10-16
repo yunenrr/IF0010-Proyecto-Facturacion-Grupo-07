@@ -1,9 +1,9 @@
 USE SISTEMADEFACTURACION;
 GO
 CREATE OR ALTER PROCEDURE USP_CREAR_DETALLE_FACTURA (
-    @IDENTIFICADOR_FACTURA VARCHAR(50),
-    @ID_PRODUCTO INT = NULL,
-    @ID_SERVICIO INT = NULL,
+    @IDENTIFICADOR_FACTURA INT,
+    @ID_PRODUCTO INT,
+    @ID_SERVICIO INT,
     @CANTIDAD DECIMAL(18, 2),
     @NUMERO_CORRELATIVO INT OUTPUT,
     @CODIGO_ERROR INT OUTPUT,
@@ -22,23 +22,17 @@ BEGIN
     SET @CODIGO_ERROR = 0;
     SET @MENSAJE = 'Detalle creado correctamente';
     --Validaciones
-    IF @IDENTIFICADOR_FACTURA IS NULL OR LEN(@IDENTIFICADOR_FACTURA) > 50
+    IF @IDENTIFICADOR_FACTURA IS NULL
         BEGIN
             SET @CODIGO_ERROR = 4;
-            SET
-                @MENSAJE = 'El identificador de factura es '
-                + 'obligatorio y no puede exceder 50 caracteres';
+            SET @MENSAJE = 'El identificador de factura es obligatorio';
             RETURN;
         END
 
-    IF
-        (@ID_PRODUCTO IS NULL AND @ID_SERVICIO IS NULL)
-        OR (@ID_PRODUCTO IS NOT NULL AND @ID_SERVICIO IS NOT NULL)
+    IF @ID_PRODUCTO IS NULL OR @ID_SERVICIO IS NULL
         BEGIN
             SET @CODIGO_ERROR = 5;
-            SET
-                @MENSAJE = 'Debe especificar '
-                + 'exactamente un producto o un servicio';
+            SET @MENSAJE = 'Debe especificar un producto y un servicio';
             RETURN;
         END
 
@@ -66,29 +60,31 @@ BEGIN
             RETURN;
         END
 
-    IF @ID_PRODUCTO IS NOT NULL
-        BEGIN
-            SELECT
-                @DESCRIPCION = P.DESCRIPCION,
-                @PRECIO = P.PRECIO_UNITARIO,
-                @IMPUESTO = P.PORCENTAJE_IMPUESTO
-            FROM PRODUCTOS AS P
-            WHERE P.ID_PRODUCTO = @ID_PRODUCTO AND P.ESTADO = 1;
-        END
-    ELSE
-        BEGIN
-            SELECT
-                @DESCRIPCION = S.DESCRIPCION,
-                @PRECIO = S.PRECIO_UNITARIO,
-                @IMPUESTO = S.PORCENTAJE_IMPUESTO
-            FROM SERVICIOS AS S
-            WHERE S.ID_SERVICIO = @ID_SERVICIO AND S.ESTADO = 1;
-        END
+    -- Descripcion, precio e impuesto se toman del producto
+    SELECT
+        @DESCRIPCION = P.DESCRIPCION,
+        @PRECIO = P.PRECIO_UNITARIO,
+        @IMPUESTO = P.PORCENTAJE_IMPUESTO
+    FROM PRODUCTOS AS P
+    WHERE P.ID_PRODUCTO = @ID_PRODUCTO AND P.ESTADO = 1;
 
     IF @DESCRIPCION IS NULL
         BEGIN
             SET @CODIGO_ERROR = 3;
-            SET @MENSAJE = 'El producto o servicio no existe o esta inactivo';
+            SET @MENSAJE = 'El producto no existe o esta inactivo';
+            RETURN;
+        END
+
+    -- El servicio queda como referencia de la linea
+    IF
+        NOT EXISTS (
+            SELECT 1
+            FROM SERVICIOS
+            WHERE ID_SERVICIO = @ID_SERVICIO AND ESTADO = 1
+        )
+        BEGIN
+            SET @CODIGO_ERROR = 9;
+            SET @MENSAJE = 'El servicio no existe o esta inactivo';
             RETURN;
         END
 
@@ -117,7 +113,7 @@ BEGIN
             RETURN;
         END
 
-    -- Proceso 
+    -- Proceso
     SET @SUBTOTAL = @CANTIDAD * @PRECIO;
     SET @TOTAL = @SUBTOTAL + (@SUBTOTAL * @IMPUESTO / 100);
 
