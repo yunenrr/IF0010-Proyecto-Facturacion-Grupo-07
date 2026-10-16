@@ -1,160 +1,169 @@
 USE SISTEMADEFACTURACION;
 GO
-CREATE OR ALTER PROCEDURE USP_CREAR_FACTURA
-    @ID_EMPRESA INT,
-    @ID_CLIENTE INT,
-    @COD_MONEDA CHAR(3),
-    @COD_TIPO VARCHAR(10),
-    @OBSERVACIONES NVARCHAR(255) = NULL,
-    @IDENTIFICADOR VARCHAR(50) OUTPUT,
+CREATE OR ALTER PROCEDURE USP_CREAR_DETALLE_FACTURA (
+    @IDENTIFICADOR_FACTURA INT,
+    @ID_PRODUCTO INT,
+    @ID_SERVICIO INT,
+    @CANTIDAD DECIMAL(18, 2),
+    @NUMERO_CORRELATIVO INT OUTPUT,
     @CODIGO_ERROR INT OUTPUT,
     @MENSAJE VARCHAR(500) OUTPUT
+)
 AS
 BEGIN
     SET NOCOUNT ON;
+    DECLARE @DESCRIPCION NVARCHAR(255);
+    DECLARE @PRECIO DECIMAL(18, 2);
+    DECLARE @IMPUESTO DECIMAL(5, 2);
+    DECLARE @SUBTOTAL DECIMAL(18, 2);
+    DECLARE @TOTAL DECIMAL(18, 2);
 
-    DECLARE @COD_ESTADO VARCHAR(10);
-
-    SET @IDENTIFICADOR = NULL;
+    SET @NUMERO_CORRELATIVO = NULL;
     SET @CODIGO_ERROR = 0;
-    SET @MENSAJE = 'Factura creada correctamente';
-    IF @ID_EMPRESA IS NULL
+    SET @MENSAJE = 'Detalle creado correctamente';
+    --Validaciones
+    IF @IDENTIFICADOR_FACTURA IS NULL
         BEGIN
-            SET @CODIGO_ERROR = 6;
-            SET @MENSAJE = 'El ID de empresa es obligatorio';
+            SET @CODIGO_ERROR = 4;
+            SET @MENSAJE = 'El identificador de factura es obligatorio';
             RETURN;
         END
 
-    IF @ID_CLIENTE IS NULL
+    IF @ID_PRODUCTO IS NULL OR @ID_SERVICIO IS NULL
         BEGIN
-            SET @CODIGO_ERROR = 7;
-            SET @MENSAJE = 'El ID de cliente es obligatorio';
-            RETURN;
-        END
-
-    IF @COD_MONEDA IS NULL
-        BEGIN
-            SET @CODIGO_ERROR = 8;
-            SET @MENSAJE = 'El código de moneda es obligatorio';
-            RETURN;
-        END
-
-    IF LEN(@COD_MONEDA) <> 3
-        BEGIN
-            SET @CODIGO_ERROR = 12;
-            SET @MENSAJE = 'El código de moneda debe tener 3 caracteres';
-            RETURN;
-        END
-
-    IF @COD_TIPO IS NULL
-        BEGIN
-            SET @CODIGO_ERROR = 9;
-            SET @MENSAJE = 'El código de tipo de documento es obligatorio';
-            RETURN;
-        END
-
-    IF LEN(@COD_TIPO) > 10
-        BEGIN
-            SET @CODIGO_ERROR = 10;
-            SET
-                @MENSAJE = 'El código de tipo de '
-                + 'documento no puede exceder 10 caracteres';
-            RETURN;
-        END
-
-    IF @OBSERVACIONES IS NOT NULL AND LEN(@OBSERVACIONES) > 255
-        BEGIN
-            SET @CODIGO_ERROR = 11;
-            SET @MENSAJE = 'Las observaciones no pueden exceder 255 caracteres';
+            SET @CODIGO_ERROR = 5;
+            SET @MENSAJE = 'Debe especificar un producto y un servicio';
             RETURN;
         END
 
     IF
         NOT EXISTS (
-            SELECT 1 FROM EMPRESA_EMISORA
-            WHERE ID_EMPRESA = @ID_EMPRESA AND INDICADOR = 1
+            SELECT 1
+            FROM FACTURA AS F
+            INNER JOIN ESTADO_FACTURA AS E
+                ON F.COD_IDENTIFICADOR_ESTADO = E.COD_IDENTIFICADOR
+            WHERE
+                F.IDENTIFICADOR = @IDENTIFICADOR_FACTURA
+                AND E.ESTADO = 'BORRADOR'
         )
         BEGIN
             SET @CODIGO_ERROR = 1;
-            SET @MENSAJE = 'La empresa no existe o no esta activa';
+            SET
+                @MENSAJE = 'La factura no existe o no esta en estado BORRADOR';
             RETURN;
         END
 
-    IF
-        NOT EXISTS (
-            SELECT 1 FROM CLIENTE
-            WHERE ID_CLIENTE = @ID_CLIENTE
-        )
+    IF @CANTIDAD IS NULL OR @CANTIDAD <= 0
         BEGIN
             SET @CODIGO_ERROR = 2;
-            SET @MENSAJE = 'El cliente no existe';
+            SET @MENSAJE = 'La cantidad debe ser mayor a 0';
             RETURN;
         END
 
-    IF
-        NOT EXISTS (
-            SELECT 1 FROM MONEDAS
-            WHERE COD_IDENTIFICADOR = @COD_MONEDA
-        )
+    -- Descripcion, precio e impuesto se toman del producto
+    SELECT
+        @DESCRIPCION = P.DESCRIPCION,
+        @PRECIO = P.PRECIO_UNITARIO,
+        @IMPUESTO = P.PORCENTAJE_IMPUESTO
+    FROM PRODUCTOS AS P
+    WHERE P.ID_PRODUCTO = @ID_PRODUCTO AND P.ESTADO = 1;
+
+    IF @DESCRIPCION IS NULL
         BEGIN
             SET @CODIGO_ERROR = 3;
-            SET @MENSAJE = 'La moneda no existe';
+            SET @MENSAJE = 'El producto no existe o esta inactivo';
             RETURN;
         END
 
+    -- El servicio queda como referencia de la linea
     IF
         NOT EXISTS (
-            SELECT 1 FROM TIPO_DOCUMENTO
-            WHERE COD_IDENTIFICADOR = @COD_TIPO
+            SELECT 1
+            FROM SERVICIOS
+            WHERE ID_SERVICIO = @ID_SERVICIO AND ESTADO = 1
         )
         BEGIN
-            SET @CODIGO_ERROR = 4;
-            SET @MENSAJE = 'El tipo de documento no existe';
+            SET @CODIGO_ERROR = 9;
+            SET @MENSAJE = 'El servicio no existe o esta inactivo';
             RETURN;
         END
 
-    SELECT @COD_ESTADO = COD_IDENTIFICADOR
-    FROM ESTADO_FACTURA
-    WHERE ESTADO = 'BORRADOR';
-
-    IF @COD_ESTADO IS NULL
+    IF LEN(@DESCRIPCION) > 255
         BEGIN
-            SET @CODIGO_ERROR = 5;
-            SET @MENSAJE = 'No existe el estado BORRADOR en ESTADO_FACTURA';
+            SET @CODIGO_ERROR = 6;
+            SET @MENSAJE = 'La descripción no puede exceder 255 caracteres';
             RETURN;
         END
-    -- proceso
+
+    IF @PRECIO IS NULL OR @PRECIO <= 0
+        BEGIN
+            SET @CODIGO_ERROR = 7;
+            SET
+                @MENSAJE = 'El precio unitario es '
+                + 'obligatorio y debe ser mayor a 0';
+            RETURN;
+        END
+
+    IF @IMPUESTO IS NULL OR @IMPUESTO < 0
+        BEGIN
+            SET @CODIGO_ERROR = 8;
+            SET
+                @MENSAJE = 'El porcentaje de impuesto es '
+                + 'obligatorio y no puede ser negativo';
+            RETURN;
+        END
+
+    -- Proceso
+    SET @SUBTOTAL = @CANTIDAD * @PRECIO;
+    SET @TOTAL = @SUBTOTAL + (@SUBTOTAL * @IMPUESTO / 100);
 
     BEGIN TRY
         BEGIN TRANSACTION;
+        SELECT @NUMERO_CORRELATIVO = ISNULL(MAX(NUMERO_CORRELATIVO), 0) + 1
+        FROM DETALLE_FACTURA WITH (UPDLOCK, HOLDLOCK)
+        WHERE IDENTIFICADOR_FACTURA = @IDENTIFICADOR_FACTURA;
 
-        SET
-            @IDENTIFICADOR = FORMAT(GETDATE(), 'yyyyMMddHHmmss')
-            + '-' + @COD_TIPO;
-
-        INSERT INTO FACTURA (
-            IDENTIFICADOR, FECHA_EMISION, SUBTOTAL, TOTAL_DESCUENTOS,
-            IMPUESTOS_APLICADOS, MONTO_TOTAL, OBSERVACIONES,
-            ID_EMPRESA, ID_CLIENTE, COD_IDENTIFICADOR_MONEDA,
-            COD_IDENTIFICADOR_TIPO, COD_IDENTIFICADOR_ESTADO
+        INSERT INTO DETALLE_FACTURA (
+            IDENTIFICADOR_FACTURA, NUMERO_CORRELATIVO, DESCRIPCION,
+            CANTIDAD, PRECIO_UNITARIO, PORCENTAJE_IMPUESTO,
+            SUBTOTAL_LINEA, MONTOTOTAL_LINEA, ID_PRODUCTO, ID_SERVICIO
         )
         VALUES (
-            @IDENTIFICADOR, CAST(GETDATE() AS DATE), 0, 0,
-            0, 0, @OBSERVACIONES,
-            @ID_EMPRESA, @ID_CLIENTE, @COD_MONEDA,
-            @COD_TIPO, @COD_ESTADO
+            @IDENTIFICADOR_FACTURA, @NUMERO_CORRELATIVO, @DESCRIPCION,
+            @CANTIDAD, @PRECIO, @IMPUESTO,
+            @SUBTOTAL, @TOTAL, @ID_PRODUCTO, @ID_SERVICIO
         );
+
+        UPDATE FACTURA
+        SET
+            SUBTOTAL = (
+                SELECT SUM(SUBTOTAL_LINEA)
+                FROM DETALLE_FACTURA
+                WHERE IDENTIFICADOR_FACTURA = @IDENTIFICADOR_FACTURA
+            ),
+            IMPUESTOS_APLICADOS = (
+                SELECT SUM(MONTOTOTAL_LINEA - SUBTOTAL_LINEA)
+                FROM DETALLE_FACTURA
+                WHERE IDENTIFICADOR_FACTURA = @IDENTIFICADOR_FACTURA
+            ),
+            MONTO_TOTAL = (
+                SELECT SUM(MONTOTOTAL_LINEA)
+                FROM DETALLE_FACTURA
+                WHERE IDENTIFICADOR_FACTURA = @IDENTIFICADOR_FACTURA
+            ),
+            MODIFICACION = GETDATE()
+        WHERE IDENTIFICADOR = @IDENTIFICADOR_FACTURA;
 
         COMMIT TRANSACTION;
     END TRY
-    BEGIN CATCH
 
+    BEGIN CATCH
         IF @@TRANCOUNT > 0
             ROLLBACK TRANSACTION;
 
-        SET @IDENTIFICADOR = NULL;
+        SET @NUMERO_CORRELATIVO = NULL;
         SET @CODIGO_ERROR = ERROR_NUMBER();
         SET @MENSAJE = ERROR_MESSAGE();
-    END CATCH
+    END CATCH;
 END;
 GO
