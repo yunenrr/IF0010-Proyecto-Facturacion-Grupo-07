@@ -63,7 +63,6 @@ BEGIN
         COMMIT TRANSACTION;
     END TRY
     BEGIN CATCH
-      
         IF @@TRANCOUNT > 0
             ROLLBACK TRANSACTION;
         SET @IDENTIFICADOR = NULL;
