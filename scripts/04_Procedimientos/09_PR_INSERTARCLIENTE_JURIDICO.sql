@@ -1,11 +1,12 @@
 USE SISTEMADEFACTURACION;
 GO
 
-IF EXISTS (
-    SELECT 1
-    FROM SYS.OBJECTS
-    WHERE NAME = 'PR_INSERTARCLIENTE_JURIDICO' AND TYPE = 'P'
-)
+IF
+    EXISTS (
+        SELECT 1
+        FROM SYS.OBJECTS
+        WHERE NAME = 'PR_INSERTARCLIENTE_JURIDICO' AND TYPE = 'P'
+    )
     BEGIN
         DROP PROCEDURE DBO.PR_INSERTARCLIENTE_JURIDICO;
     END
@@ -30,7 +31,8 @@ BEGIN
 
         IF TRIM(@CEDULA) = '' OR @CEDULA IS NULL
             BEGIN
-                SET @MSG = 'La cédula jurídica es obligatoria '
+                SET
+                    @MSG = 'La cédula jurídica es obligatoria '
                     + 'y no puede estar vacía.';
                 THROW 50001, @MSG, 1;
             END
@@ -41,10 +43,10 @@ BEGIN
                 THROW 50001, @MSG, 1;
             END
 
-        IF TRIM(@CORREO_ELECTRONICO) = ''
-            OR @CORREO_ELECTRONICO IS NULL
+        IF TRIM(@CORREO_ELECTRONICO) = '' OR @CORREO_ELECTRONICO IS NULL
             BEGIN
-                SET @MSG = 'El correo electrónico del cliente '
+                SET
+                    @MSG = 'El correo electrónico del cliente '
                     + 'es obligatorio.';
                 THROW 50002, @MSG, 1;
             END
@@ -57,18 +59,21 @@ BEGIN
 
         IF @ID_DIRECCION IS NULL
             BEGIN
-                SET @MSG = 'Debe asociar una dirección válida '
+                SET
+                    @MSG = 'Debe asociar una dirección válida '
                     + 'al cliente.';
                 THROW 50004, @MSG, 1;
             END
 
-        IF NOT EXISTS (
-            SELECT 1
-            FROM DIRECCION
-            WHERE ID_DIRECCION = @ID_DIRECCION
-        )
+        IF
+            NOT EXISTS (
+                SELECT 1
+                FROM DIRECCION
+                WHERE ID_DIRECCION = @ID_DIRECCION
+            )
             BEGIN
-                SET @MSG = 'La dirección especificada no existe '
+                SET
+                    @MSG = 'La dirección especificada no existe '
                     + 'en el sistema.';
                 THROW 50005, @MSG, 1;
             END
@@ -85,7 +90,8 @@ BEGIN
                 WHERE CEDULA = @CEDULA
             )
             BEGIN
-                SET @MSG = 'Ya se encuentra registrado un cliente '
+                SET
+                    @MSG = 'Ya se encuentra registrado un cliente '
                     + 'con el número de cédula indicado.';
                 THROW 50006, @MSG, 1;
             END
@@ -102,7 +108,8 @@ BEGIN
                 WHERE CORREO_ELECTRONICO = @CORREO_ELECTRONICO
             )
             BEGIN
-                SET @MSG = 'El correo electrónico ingresado ya '
+                SET
+                    @MSG = 'El correo electrónico ingresado ya '
                     + 'pertenece a otro cliente registrado.';
                 THROW 50007, @MSG, 1;
             END
@@ -119,7 +126,8 @@ BEGIN
                 WHERE ID_DIRECCION = @ID_DIRECCION
             )
             BEGIN
-                SET @MSG = 'La dirección indicada ya se encuentra '
+                SET
+                    @MSG = 'La dirección indicada ya se encuentra '
                     + 'asignada a otro cliente.';
                 THROW 50008, @MSG, 1;
             END
