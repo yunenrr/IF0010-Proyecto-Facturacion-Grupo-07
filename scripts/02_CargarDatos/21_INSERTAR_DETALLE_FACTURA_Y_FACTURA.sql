@@ -82,7 +82,6 @@ WITH P AS (
     WHERE ESTADO = 1
     ORDER BY ID_PRODUCTO
 ),
-
 S AS (
     SELECT TOP (3)
         CAST(
@@ -93,7 +92,6 @@ S AS (
     WHERE ESTADO = 1
     ORDER BY ID_SERVICIO
 )
-
 SELECT
     P.NUMERO_CORRELATIVO,
     P.ID_PRODUCTO,
@@ -135,7 +133,7 @@ IF @N_EMPRESAS = 0
     OR @N_TIPOS = 0
     BEGIN
         RAISERROR (
-            'Faltan datos maestros (empresas, clientes, monedas o tipos de documento).',
+            'Faltan datos maestros (empresas, clientes, monedas o tipos).',
             16,
             1
         );
@@ -161,7 +159,7 @@ WHERE ESTADO IN ('BORRADOR', 'EMITIDA', 'PAGADA', 'CANCELADA');
 IF @COUNT_ESTADOS < 4
     BEGIN
         RAISERROR (
-            'Faltan estados en ESTADO_FACTURA (BORRADOR, EMITIDA, PAGADA, CANCELADA).',
+            'Faltan estados en ESTADO_FACTURA (BORRADOR, EMITIDA, PAGADA).',
             16,
             1
         );
@@ -323,8 +321,8 @@ ORDER BY N;
 
 OPEN CUR_FACTURAS;
 FETCH NEXT FROM CUR_FACTURAS INTO
-@F_N, @F_COMP, @F_FECHA, @F_EMP, @F_CLI_FIS, @F_CLI_JUR, @F_MON,
-@F_TIPO, @F_EST, @F_SUB, @F_DESC, @F_IMP, @F_MONTO;
+    @F_N, @F_COMP, @F_FECHA, @F_EMP, @F_CLI_FIS, @F_CLI_JUR, @F_MON,
+    @F_TIPO, @F_EST, @F_SUB, @F_DESC, @F_IMP, @F_MONTO;
 
 SET @CONTADOR = 0;
 BEGIN TRANSACTION;
@@ -360,8 +358,8 @@ WHILE @@FETCH_STATUS = 0 AND @COD = 0
             END;
 
         FETCH NEXT FROM CUR_FACTURAS INTO
-        @F_N, @F_COMP, @F_FECHA, @F_EMP, @F_CLI_FIS, @F_CLI_JUR, @F_MON,
-        @F_TIPO, @F_EST, @F_SUB, @F_DESC, @F_IMP, @F_MONTO;
+            @F_N, @F_COMP, @F_FECHA, @F_EMP, @F_CLI_FIS, @F_CLI_JUR, @F_MON,
+            @F_TIPO, @F_EST, @F_SUB, @F_DESC, @F_IMP, @F_MONTO;
     END;
 
 CLOSE CUR_FACTURAS;
@@ -431,8 +429,8 @@ IF @COD = 0
 
         OPEN CUR_DETALLES;
         FETCH NEXT FROM CUR_DETALLES INTO
-        @D_ID, @D_CORR, @D_DESC, @D_CANT,
-        @D_PRECIO, @D_IMP, @D_PROD, @D_SERV;
+            @D_ID, @D_CORR, @D_DESC, @D_CANT,
+            @D_PRECIO, @D_IMP, @D_PROD, @D_SERV;
 
         SET @CONTADOR = 0;
         BEGIN TRANSACTION;
@@ -460,8 +458,8 @@ IF @COD = 0
                     END;
 
                 FETCH NEXT FROM CUR_DETALLES INTO
-                @D_ID, @D_CORR, @D_DESC, @D_CANT,
-                @D_PRECIO, @D_IMP, @D_PROD, @D_SERV;
+                    @D_ID, @D_CORR, @D_DESC, @D_CANT,
+                    @D_PRECIO, @D_IMP, @D_PROD, @D_SERV;
             END;
 
         CLOSE CUR_DETALLES;
