@@ -17,11 +17,13 @@ WHILE @CONTADOR <= 50000
     BEGIN
         SET @IDDIRECCIONVALIDO = @CONTADOR;
 
-        SET @CORREOGEN = 'clienteprueba'
+        SET
+            @CORREOGEN = 'clienteprueba'
             + CAST(@CONTADOR AS VARCHAR(10))
             + '@facturacioncr.com';
 
-        SET @TELEFONOGEN = '8'
+        SET
+            @TELEFONOGEN = '8'
             + RIGHT(
                 '0000000' + CAST(7000000 + @CONTADOR AS VARCHAR(10)),
                 7
@@ -31,7 +33,8 @@ WHILE @CONTADOR <= 50000
         IF (@CONTADOR % 2 = 0)
             BEGIN
                 -- FÍSICO
-                SET @CEDULAGEN = '1-'
+                SET
+                    @CEDULAGEN = '1-'
                     + RIGHT(
                         '0000'
                         + CAST((@CONTADOR % 9000) + 1000 AS VARCHAR(10)),
@@ -43,10 +46,12 @@ WHILE @CONTADOR <= 50000
                         4
                     );
 
-                SET @NOMBREGEN = 'Nombre'
+                SET
+                    @NOMBREGEN = 'Nombre'
                     + CAST(@CONTADOR AS VARCHAR(10));
 
-                SET @APELLIDOGEN = 'Apellido'
+                SET
+                    @APELLIDOGEN = 'Apellido'
                     + CAST(@CONTADOR AS VARCHAR(10));
 
                 EXEC DBO.PR_MIGRAR_CLIENTE_FISICO
@@ -61,13 +66,15 @@ WHILE @CONTADOR <= 50000
         ELSE
             BEGIN
                 -- JURÍDICO
-                SET @CEDULAGEN = '3-101-'
+                SET
+                    @CEDULAGEN = '3-101-'
                     + RIGHT(
                         '000000' + CAST(@CONTADOR AS VARCHAR(10)),
                         6
                     );
 
-                SET @RAZONGEN = 'Empresa Cliente S.A. '
+                SET
+                    @RAZONGEN = 'Empresa Cliente S.A. '
                     + CAST(@CONTADOR AS VARCHAR(10));
 
                 EXEC DBO.PR_MIGRAR_CLIENTE_JURIDICO
