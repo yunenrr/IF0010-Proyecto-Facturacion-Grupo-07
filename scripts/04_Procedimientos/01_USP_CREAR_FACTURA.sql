@@ -31,8 +31,10 @@ BEGIN
         END
 
     -- VALIDACIÓN REGLA DE NEGOCIO: Cliente Físico o Jurídico
-    IF (@ID_CLIENTE_FISICO IS NOT NULL
-        AND @ID_CLIENTE_JURIDICO IS NOT NULL)
+    IF (
+        @ID_CLIENTE_FISICO IS NOT NULL
+        AND @ID_CLIENTE_JURIDICO IS NOT NULL
+    )
         BEGIN
             SET @CODIGO_ERROR = 7;
             SET @MENSAJE = 'Una factura no puede tener un cliente '
@@ -40,8 +42,10 @@ BEGIN
             RETURN;
         END
 
-    IF (@ID_CLIENTE_FISICO IS NULL
-        AND @ID_CLIENTE_JURIDICO IS NULL)
+    IF (
+        @ID_CLIENTE_FISICO IS NULL
+        AND @ID_CLIENTE_JURIDICO IS NULL
+    )
         BEGIN
             SET @CODIGO_ERROR = 7;
             SET @MENSAJE = 'La factura debe tener asignado un cliente '
@@ -207,6 +211,6 @@ BEGIN
         SET @IDENTIFICADOR_COMPROBANTE = NULL;
         SET @CODIGO_ERROR = ERROR_NUMBER();
         SET @MENSAJE = ERROR_MESSAGE();
-    END CATCH
+    END CATCH;
 END;
 GO
