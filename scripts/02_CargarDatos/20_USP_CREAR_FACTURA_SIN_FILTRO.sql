@@ -3,7 +3,8 @@ GO
 
 CREATE OR ALTER PROCEDURE USP_CREAR_FACTURA_SIN_FILTRO (
     @ID_EMPRESA INT,
-    @ID_CLIENTE INT,
+    @ID_CLIENTE_FISICO INT = NULL,
+    @ID_CLIENTE_JURIDICO INT = NULL,
     @COD_MONEDA CHAR(3),
     @COD_TIPO VARCHAR(10),
     @COD_ESTADO VARCHAR(10),
@@ -25,6 +26,21 @@ BEGIN
     SET @CODIGO_ERROR = 0;
     SET @MENSAJE = 'Factura creada correctamente';
 
+    -- VALIDACIÓN DE REGLA DE NEGOCIO (Cliente Físico o Jurídico, no ambos)
+    IF (@ID_CLIENTE_FISICO IS NOT NULL AND @ID_CLIENTE_JURIDICO IS NOT NULL)
+    BEGIN
+        SET @CODIGO_ERROR = 50001;
+        SET @MENSAJE = 'Error: Una factura no puede tener un cliente físico y un cliente jurídico al mismo tiempo.';
+        RETURN;
+    END
+
+    IF (@ID_CLIENTE_FISICO IS NULL AND @ID_CLIENTE_JURIDICO IS NULL)
+    BEGIN
+        SET @CODIGO_ERROR = 50002;
+        SET @MENSAJE = 'Error: La factura debe tener asignado un cliente físico o un cliente jurídico obligatoriamente.';
+        RETURN;
+    END
+
     -- Proceso
     BEGIN TRY
         BEGIN TRANSACTION;
@@ -38,7 +54,8 @@ BEGIN
             MONTO_TOTAL,
             OBSERVACIONES,
             ID_EMPRESA,
-            ID_CLIENTE,
+            ID_CLIENTE_FISICO,
+            ID_CLIENTE_JURIDICO,
             COD_IDENTIFICADOR_MONEDA,
             COD_IDENTIFICADOR_TIPO,
             COD_IDENTIFICADOR_ESTADO
@@ -52,7 +69,8 @@ BEGIN
             @MONTO_TOTAL,
             @OBSERVACIONES,
             @ID_EMPRESA,
-            @ID_CLIENTE,
+            @ID_CLIENTE_FISICO,
+            @ID_CLIENTE_JURIDICO,
             @COD_MONEDA,
             @COD_TIPO,
             @COD_ESTADO
