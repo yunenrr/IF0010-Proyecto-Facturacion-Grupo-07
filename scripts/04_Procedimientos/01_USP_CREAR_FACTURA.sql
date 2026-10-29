@@ -37,7 +37,8 @@ BEGIN
     )
         BEGIN
             SET @CODIGO_ERROR = 7;
-            SET @MENSAJE = 'Una factura no puede tener un cliente '
+            SET
+                @MENSAJE = 'Una factura no puede tener un cliente '
                 + 'físico y jurídico a la vez';
             RETURN;
         END
@@ -48,7 +49,8 @@ BEGIN
     )
         BEGIN
             SET @CODIGO_ERROR = 7;
-            SET @MENSAJE = 'La factura debe tener asignado un cliente '
+            SET
+                @MENSAJE = 'La factura debe tener asignado un cliente '
                 + 'físico o jurídico';
             RETURN;
         END
@@ -77,7 +79,8 @@ BEGIN
     IF LEN(@COD_TIPO) > 10
         BEGIN
             SET @CODIGO_ERROR = 10;
-            SET @MENSAJE = 'El código de tipo de documento no puede '
+            SET
+                @MENSAJE = 'El código de tipo de documento no puede '
                 + 'exceder 10 caracteres';
             RETURN;
         END
@@ -85,68 +88,74 @@ BEGIN
     IF @OBSERVACIONES IS NOT NULL AND LEN(@OBSERVACIONES) > 255
         BEGIN
             SET @CODIGO_ERROR = 11;
-            SET @MENSAJE = 'Las observaciones no pueden exceder '
+            SET
+                @MENSAJE = 'Las observaciones no pueden exceder '
                 + '255 caracteres';
             RETURN;
         END
 
-    IF NOT EXISTS (
-        SELECT 1
-        FROM EMPRESA_EMISORA
-        WHERE ID_EMPRESA = @ID_EMPRESA AND INDICADOR = 1
-    )
-        BEGIN
-            SET @CODIGO_ERROR = 1;
-            SET @MENSAJE = 'La empresa no existe o no esta activa';
-            RETURN;
-        END
+    IF
+        NOT EXISTS (
+            SELECT 1
+            FROM EMPRESA_EMISORA
+            WHERE ID_EMPRESA = @ID_EMPRESA AND INDICADOR = 1
+        )
+            BEGIN
+                SET @CODIGO_ERROR = 1;
+                SET @MENSAJE = 'La empresa no existe o no esta activa';
+                RETURN;
+            END
 
     -- VALIDAR EXISTENCIA DEL CLIENTE SEGÚN SU TIPO
-    IF @ID_CLIENTE_FISICO IS NOT NULL
+    IF
+        @ID_CLIENTE_FISICO IS NOT NULL
         AND NOT EXISTS (
             SELECT 1
             FROM CLIENTE_FISICO
             WHERE ID_CLIENTE = @ID_CLIENTE_FISICO
         )
-        BEGIN
-            SET @CODIGO_ERROR = 2;
-            SET @MENSAJE = 'El cliente físico no existe';
-            RETURN;
-        END
+            BEGIN
+                SET @CODIGO_ERROR = 2;
+                SET @MENSAJE = 'El cliente físico no existe';
+                RETURN;
+            END
 
-    IF @ID_CLIENTE_JURIDICO IS NOT NULL
+    IF
+        @ID_CLIENTE_JURIDICO IS NOT NULL
         AND NOT EXISTS (
             SELECT 1
             FROM CLIENTE_JURIDICO
             WHERE ID_CLIENTE = @ID_CLIENTE_JURIDICO
         )
-        BEGIN
-            SET @CODIGO_ERROR = 2;
-            SET @MENSAJE = 'El cliente jurídico no existe';
-            RETURN;
-        END
+            BEGIN
+                SET @CODIGO_ERROR = 2;
+                SET @MENSAJE = 'El cliente jurídico no existe';
+                RETURN;
+            END
 
-    IF NOT EXISTS (
-        SELECT 1
-        FROM MONEDAS
-        WHERE COD_IDENTIFICADOR = @COD_MONEDA
-    )
-        BEGIN
-            SET @CODIGO_ERROR = 3;
-            SET @MENSAJE = 'La moneda no existe';
-            RETURN;
-        END
+    IF
+        NOT EXISTS (
+            SELECT 1
+            FROM MONEDAS
+            WHERE COD_IDENTIFICADOR = @COD_MONEDA
+        )
+            BEGIN
+                SET @CODIGO_ERROR = 3;
+                SET @MENSAJE = 'La moneda no existe';
+                RETURN;
+            END
 
-    IF NOT EXISTS (
-        SELECT 1
-        FROM TIPO_DOCUMENTO
-        WHERE COD_IDENTIFICADOR = @COD_TIPO
-    )
-        BEGIN
-            SET @CODIGO_ERROR = 4;
-            SET @MENSAJE = 'El tipo de documento no existe';
-            RETURN;
-        END
+    IF
+        NOT EXISTS (
+            SELECT 1
+            FROM TIPO_DOCUMENTO
+            WHERE COD_IDENTIFICADOR = @COD_TIPO
+        )
+            BEGIN
+                SET @CODIGO_ERROR = 4;
+                SET @MENSAJE = 'El tipo de documento no existe';
+                RETURN;
+            END
 
     SELECT @COD_ESTADO = COD_IDENTIFICADOR
     FROM ESTADO_FACTURA
