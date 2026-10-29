@@ -11,6 +11,8 @@ DECLARE @COD INT = 0;
 DECLARE @MSG VARCHAR(500) = '';
 DECLARE @CONTADOR INT;
 DECLARE @SQL NVARCHAR(MAX);
+DECLARE @SEG DECIMAL(10, 2);
+DECLARE @LOG VARCHAR(200);
 
 DROP TABLE IF EXISTS #EMPRESAS;
 DROP TABLE IF EXISTS #CLIENTES;
@@ -29,11 +31,29 @@ INTO #EMPRESAS
 FROM EMPRESA_EMISORA
 WHERE INDICADOR = 1;
 
+-- Unimos los dos tipos de clientes en una sola temporal
 SELECT
-    CAST(ROW_NUMBER() OVER (ORDER BY ID_CLIENTE) AS INT) AS N,
-    ID_CLIENTE
+    CAST(
+        ROW_NUMBER() OVER (
+            ORDER BY ID_CLIENTE_FISICO, ID_CLIENTE_JURIDICO
+        ) AS INT
+    ) AS N,
+    ID_CLIENTE_FISICO,
+    ID_CLIENTE_JURIDICO
 INTO #CLIENTES
-FROM CLIENTE;
+FROM (
+    SELECT
+        ID_CLIENTE AS ID_CLIENTE_FISICO,
+        NULL AS ID_CLIENTE_JURIDICO
+    FROM CLIENTE_FISICO
+
+    UNION ALL
+
+    SELECT
+        NULL AS ID_CLIENTE_FISICO,
+        ID_CLIENTE AS ID_CLIENTE_JURIDICO
+    FROM CLIENTE_JURIDICO
+) AS CLIENTES_UNIFICADOS;
 
 SELECT
     CAST(
@@ -89,17 +109,24 @@ FROM P
 INNER JOIN S
     ON P.NUMERO_CORRELATIVO = S.N;
 
-DECLARE @N_EMPRESAS INT = (SELECT COUNT(*) FROM #EMPRESAS);
-DECLARE @N_CLIENTES INT = (SELECT COUNT(*) FROM #CLIENTES);
-DECLARE @N_MONEDAS INT = (SELECT COUNT(*) FROM #MONEDAS);
-DECLARE @N_TIPOS INT = (SELECT COUNT(*) FROM #TIPOS);
-DECLARE @N_ITEMS INT = (SELECT COUNT(*) FROM #ITEMS);
+DECLARE @N_EMPRESAS INT;
+DECLARE @N_CLIENTES INT;
+DECLARE @N_MONEDAS INT;
+DECLARE @N_TIPOS INT;
+DECLARE @N_ITEMS INT;
+
+SELECT @N_EMPRESAS = COUNT(*) FROM #EMPRESAS;
+SELECT @N_CLIENTES = COUNT(*) FROM #CLIENTES;
+SELECT @N_MONEDAS = COUNT(*) FROM #MONEDAS;
+SELECT @N_TIPOS = COUNT(*) FROM #TIPOS;
+SELECT @N_ITEMS = COUNT(*) FROM #ITEMS;
 
 IF EXISTS (SELECT 1 FROM FACTURA)
     BEGIN
         RAISERROR (
-            'Ya existen facturas. Ejecute limpiar_facturas.sql antes de cargar.',  -- noqa: LT05
-            16, 1
+            'Ya existen facturas. Ejecute limpiar_facturas.sql primero.',
+            16,
+            1
         );
         RETURN;
     END;
@@ -107,8 +134,9 @@ IF EXISTS (SELECT 1 FROM FACTURA)
 IF @N_EMPRESAS = 0 OR @N_CLIENTES = 0 OR @N_MONEDAS = 0 OR @N_TIPOS = 0
     BEGIN
         RAISERROR (
-            'Faltan datos maestros (empresas, clientes, monedas o tipos de documento).',  -- noqa: LT05
-            16, 1
+            'Faltan datos maestros (empresas, clientes, monedas o tipos).',
+            16,
+            1
         );
         RETURN;
     END;
@@ -117,20 +145,24 @@ IF @N_ITEMS < 3
     BEGIN
         RAISERROR (
             'Se necesitan al menos 3 productos y 3 servicios activos.',
-            16, 1
+            16,
+            1
         );
         RETURN;
     END;
 
-IF (
-    SELECT COUNT(*)
-    FROM ESTADO_FACTURA
-    WHERE ESTADO IN ('BORRADOR', 'EMITIDA', 'PAGADA', 'CANCELADA')
-) < 4
+DECLARE @COUNT_ESTADOS INT;
+
+SELECT @COUNT_ESTADOS = COUNT(*)
+FROM ESTADO_FACTURA
+WHERE ESTADO IN ('BORRADOR', 'EMITIDA', 'PAGADA', 'CANCELADA');
+
+IF @COUNT_ESTADOS < 4
     BEGIN
         RAISERROR (
-            'Faltan estados en ESTADO_FACTURA (BORRADOR, EMITIDA, PAGADA, CANCELADA).',  -- noqa: LT05
-            16, 1
+            'Faltan estados en ESTADO_FACTURA (BORRADOR, EMITIDA, PAGADA).',
+            16,
+            1
         );
         RETURN;
     END;
@@ -140,13 +172,7 @@ DECLARE @INICIO DATETIME = DATEADD(YEAR, -1, @AHORA);
 DECLARE @PASO INT = DATEDIFF(SECOND, @INICIO, @AHORA) / @CANT_FACTURAS;
 
 IF @PASO < 1
-    BEGIN
-        RAISERROR (
-            'Demasiadas facturas para repartirlas en un anio sin repetir identificadores.',  -- noqa: LT05
-            16, 1
-        );
-        RETURN;
-    END;
+    SET @PASO = 1;
 
 SELECT TOP (@CANT_FACTURAS)
     CAST(ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS INT) AS N,
@@ -162,89 +188,101 @@ INTO #BASE
 FROM SYS.ALL_OBJECTS AS A
 CROSS JOIN SYS.ALL_OBJECTS AS B;
 
--- noqa: disable=ST05
+-- Los cálculos se hacen en CTEs encadenadas (en lugar de CROSS APPLY)
+WITH TIEMPOS AS (
+    SELECT
+        N,
+        R_EMPRESA,
+        R_CLIENTE,
+        R_MONEDA,
+        R_TIPO,
+        R_ESTADO,
+        R_DESCUENTO,
+        CAST(10 + R_SUBTOTAL / 100.0 AS DECIMAL(18, 2)) AS SUBTOTAL,
+        DATEADD(SECOND, (N - 1) * @PASO + SEGUNDOS_EXTRA, @INICIO) AS TS
+    FROM #BASE
+),
+
+DESCUENTOS AS (
+    SELECT
+        N,
+        R_EMPRESA,
+        R_CLIENTE,
+        R_MONEDA,
+        R_TIPO,
+        R_ESTADO,
+        TS,
+        SUBTOTAL,
+        CAST(SUBTOTAL * R_DESCUENTO / 100 AS DECIMAL(18, 2)) AS DESCUENTO
+    FROM TIEMPOS
+),
+
+MONTOS AS (
+    SELECT
+        N,
+        R_EMPRESA,
+        R_CLIENTE,
+        R_MONEDA,
+        R_TIPO,
+        R_ESTADO,
+        TS,
+        SUBTOTAL,
+        DESCUENTO,
+        CAST((SUBTOTAL - DESCUENTO) * 13 / 100 AS DECIMAL(18, 2)) AS IMPUESTO
+    FROM DESCUENTOS
+)
+
 SELECT
-    B.N,
-    X.TS AS FECHA_HORA,
+    V.N,
+    V.TS AS FECHA_HORA,
     EM.ID_EMPRESA,
-    CL.ID_CLIENTE,
+    CL.ID_CLIENTE_FISICO,
+    CL.ID_CLIENTE_JURIDICO,
     MO.COD_MONEDA,
     TI.COD_TIPO,
     E.COD_IDENTIFICADOR AS COD_ESTADO,
-    M1.SUBTOTAL,
-    M2.DESCUENTO AS TOTAL_DESCUENTOS,
-    M3.IMPUESTO AS IMPUESTOS_APLICADOS,
+    V.SUBTOTAL,
+    V.DESCUENTO AS TOTAL_DESCUENTOS,
+    V.IMPUESTO AS IMPUESTOS_APLICADOS,
+    CAST(NULL AS INT) AS ID_FACTURA,
     CAST(
-        M1.SUBTOTAL - M2.DESCUENTO + M3.IMPUESTO AS DECIMAL(18, 2)
+        V.SUBTOTAL - V.DESCUENTO + V.IMPUESTO
+        AS DECIMAL(18, 2)
     ) AS MONTO_TOTAL,
-    CONVERT(CHAR(8), X.TS, 112)
-    + REPLACE(CONVERT(CHAR(8), X.TS, 108), ':', '')
-    + '-' + TI.COD_TIPO AS IDENTIFICADOR
+    CONVERT(CHAR(8), V.TS, 112)
+    + REPLACE(CONVERT(CHAR(8), V.TS, 108), ':', '')
+    + '-' + TI.COD_TIPO AS IDENTIFICADOR_COMPROBANTE
 INTO #FACT
-FROM #BASE AS B
-CROSS APPLY (
-    SELECT DATEADD(SECOND, (B.N - 1) * @PASO + B.SEGUNDOS_EXTRA, @INICIO) AS TS
-) AS X
-CROSS APPLY (
-    SELECT CAST(10 + B.R_SUBTOTAL / 100.0 AS DECIMAL(18, 2)) AS SUBTOTAL
-) AS M1
-CROSS APPLY (
-    SELECT CAST(
-        M1.SUBTOTAL * B.R_DESCUENTO / 100 AS DECIMAL(18, 2)
-    ) AS DESCUENTO
-) AS M2
-CROSS APPLY (
-    SELECT CAST(
-        (M1.SUBTOTAL - M2.DESCUENTO) * 13 / 100 AS DECIMAL(18, 2)
-    ) AS IMPUESTO
-) AS M3
+FROM MONTOS AS V
 INNER JOIN #EMPRESAS AS EM
-    ON EM.N = (B.R_EMPRESA % @N_EMPRESAS) + 1
+    ON EM.N = (V.R_EMPRESA % @N_EMPRESAS) + 1
 INNER JOIN #CLIENTES AS CL
-    ON CL.N = (B.R_CLIENTE % @N_CLIENTES) + 1
+    ON CL.N = (V.R_CLIENTE % @N_CLIENTES) + 1
 INNER JOIN #MONEDAS AS MO
-    ON MO.N = (B.R_MONEDA % @N_MONEDAS) + 1
+    ON MO.N = (V.R_MONEDA % @N_MONEDAS) + 1
 INNER JOIN #TIPOS AS TI
-    ON TI.N = (B.R_TIPO % @N_TIPOS) + 1
+    ON TI.N = (V.R_TIPO % @N_TIPOS) + 1
 INNER JOIN ESTADO_FACTURA AS E
     ON E.ESTADO = CASE
-        WHEN B.R_ESTADO < 5 THEN 'BORRADOR'
-        WHEN B.R_ESTADO < 35 THEN 'EMITIDA'
-        WHEN B.R_ESTADO < 90 THEN 'PAGADA'
+        WHEN V.R_ESTADO < 5 THEN 'BORRADOR'
+        WHEN V.R_ESTADO < 35 THEN 'EMITIDA'
+        WHEN V.R_ESTADO < 90 THEN 'PAGADA'
         ELSE 'CANCELADA'
     END;
--- noqa: enable=ST05
 
--- 3. Detalles: cada factura lleva los mismos 3 items (3 lineas por factura)
-SELECT
-    F.N,
-    F.IDENTIFICADOR,
-    I.NUMERO_CORRELATIVO,
-    I.DESCRIPCION,
-    I.CANTIDAD,
-    I.PRECIO_UNITARIO,
-    I.PORCENTAJE_IMPUESTO,
-    I.ID_PRODUCTO,
-    I.ID_SERVICIO
-INTO #DET
-FROM #FACT AS F
-CROSS JOIN #ITEMS AS I;
+CREATE CLUSTERED INDEX IX_FACT_N ON #FACT (N);
 
-PRINT 'Datos generados en temporales: '
-+ CAST(
-    CAST(
-        DATEDIFF(MILLISECOND, @T, SYSDATETIME()) / 1000.0 AS DECIMAL(10, 2)
-    ) AS VARCHAR(20)
-) + ' seg';
-SET @T = SYSDATETIME();
-
+-- DESACTIVAR INDICES
 SELECT
     I.NAME AS INDICE,
     OBJECT_NAME(I.OBJECT_ID) AS TABLA
 INTO #INDICES
 FROM SYS.INDEXES AS I
 WHERE
-    I.OBJECT_ID IN (OBJECT_ID('FACTURA'), OBJECT_ID('DETALLE_FACTURA'))
+    I.OBJECT_ID IN (
+        OBJECT_ID('FACTURA'),
+        OBJECT_ID('DETALLE_FACTURA')
+    )
     AND I.TYPE = 2
     AND I.IS_UNIQUE = 0
     AND I.IS_PRIMARY_KEY = 0
@@ -254,19 +292,25 @@ WHERE
 SELECT
     @SQL = STRING_AGG(
         CAST(
-            'ALTER INDEX ' + QUOTENAME(INDICE) + ' ON ' + QUOTENAME(TABLA)
-            + ' DISABLE;' AS NVARCHAR(MAX)
-        ), ' '
+            CONCAT(
+                'ALTER INDEX ', QUOTENAME(INDICE),
+                ' ON ', QUOTENAME(TABLA), ' DISABLE;'
+            ) AS NVARCHAR(MAX)
+        ),
+        ' '
     )
 FROM #INDICES;
 
 IF @SQL IS NOT NULL
     EXEC SP_EXECUTESQL @SQL;
 
-DECLARE @F_ID VARCHAR(50);
+DECLARE @F_ID INT;
+DECLARE @F_N INT;
+DECLARE @F_COMP VARCHAR(50);
 DECLARE @F_FECHA DATE;
 DECLARE @F_EMP INT;
-DECLARE @F_CLI INT;
+DECLARE @F_CLI_FIS INT;
+DECLARE @F_CLI_JUR INT;
 DECLARE @F_MON CHAR(3);
 DECLARE @F_TIPO VARCHAR(10);
 DECLARE @F_EST VARCHAR(10);
@@ -276,11 +320,13 @@ DECLARE @F_IMP DECIMAL(18, 2);
 DECLARE @F_MONTO DECIMAL(18, 2);
 
 DECLARE CUR_FACTURAS CURSOR LOCAL FAST_FORWARD FOR
-SELECT  -- noqa: ST06
-    IDENTIFICADOR,
+SELECT
+    N,
+    IDENTIFICADOR_COMPROBANTE,
     CAST(FECHA_HORA AS DATE) AS FECHA_EMISION,
     ID_EMPRESA,
-    ID_CLIENTE,
+    ID_CLIENTE_FISICO,
+    ID_CLIENTE_JURIDICO,
     COD_MONEDA,
     COD_TIPO,
     COD_ESTADO,
@@ -293,7 +339,7 @@ ORDER BY N;
 
 OPEN CUR_FACTURAS;
 FETCH NEXT FROM CUR_FACTURAS INTO
-@F_ID, @F_FECHA, @F_EMP, @F_CLI, @F_MON,
+@F_N, @F_COMP, @F_FECHA, @F_EMP, @F_CLI_FIS, @F_CLI_JUR, @F_MON,
 @F_TIPO, @F_EST, @F_SUB, @F_DESC, @F_IMP, @F_MONTO;
 
 SET @CONTADOR = 0;
@@ -303,10 +349,12 @@ WHILE @@FETCH_STATUS = 0 AND @COD = 0
     BEGIN
         EXEC USP_CREAR_FACTURA_SIN_FILTRO
             @ID_EMPRESA = @F_EMP,
-            @ID_CLIENTE = @F_CLI,
+            @ID_CLIENTE_FISICO = @F_CLI_FIS,
+            @ID_CLIENTE_JURIDICO = @F_CLI_JUR,
             @COD_MONEDA = @F_MON,
             @COD_TIPO = @F_TIPO,
             @COD_ESTADO = @F_EST,
+            @IDENTIFICADOR_COMPROBANTE = @F_COMP,
             @FECHA_EMISION = @F_FECHA,
             @SUBTOTAL = @F_SUB,
             @TOTAL_DESCUENTOS = @F_DESC,
@@ -315,6 +363,13 @@ WHILE @@FETCH_STATUS = 0 AND @COD = 0
             @IDENTIFICADOR = @F_ID OUTPUT,
             @CODIGO_ERROR = @COD OUTPUT,
             @MENSAJE = @MSG OUTPUT;
+
+        IF @COD = 0
+            BEGIN
+                UPDATE #FACT
+                SET ID_FACTURA = @F_ID
+                WHERE N = @F_N;
+            END;
 
         SET @CONTADOR = @CONTADOR + 1;
 
@@ -325,7 +380,7 @@ WHILE @@FETCH_STATUS = 0 AND @COD = 0
             END;
 
         FETCH NEXT FROM CUR_FACTURAS INTO
-        @F_ID, @F_FECHA, @F_EMP, @F_CLI, @F_MON,
+        @F_N, @F_COMP, @F_FECHA, @F_EMP, @F_CLI_FIS, @F_CLI_JUR, @F_MON,
         @F_TIPO, @F_EST, @F_SUB, @F_DESC, @F_IMP, @F_MONTO;
     END;
 
@@ -337,20 +392,36 @@ IF @COD = 0
 ELSE IF @@TRANCOUNT > 0
     ROLLBACK TRANSACTION;
 
-PRINT 'Facturas -> codigo ' + CAST(@COD AS VARCHAR(20))
-+ ' (llamadas: ' + CAST(@CONTADOR AS VARCHAR(20)) + ')';
+SET @LOG = 'Facturas -> codigo ' + CAST(@COD AS VARCHAR(20));
+SET @LOG = @LOG + ' (llamadas: ';
+SET @LOG = @LOG + CAST(@CONTADOR AS VARCHAR(20)) + ')';
+PRINT @LOG;
+
 IF @COD <> 0
     PRINT 'Error: ' + @MSG;
-PRINT 'Tiempo facturas: ' + CAST(
-    CAST(
-        DATEDIFF(MILLISECOND, @T, SYSDATETIME()) / 1000.0 AS DECIMAL(10, 2)
-    ) AS VARCHAR(20)
-) + ' seg';
+
+SET @SEG = DATEDIFF(MILLISECOND, @T, SYSDATETIME()) / 1000.0;
+PRINT 'Tiempo facturas: ' + CAST(@SEG AS VARCHAR(20)) + ' seg';
 SET @T = SYSDATETIME();
 
 IF @COD = 0
     BEGIN
-        DECLARE @D_ID VARCHAR(50);
+        SELECT
+            F.ID_FACTURA,
+            F.N,
+            I.NUMERO_CORRELATIVO,
+            I.DESCRIPCION,
+            I.CANTIDAD,
+            I.PRECIO_UNITARIO,
+            I.PORCENTAJE_IMPUESTO,
+            I.ID_PRODUCTO,
+            I.ID_SERVICIO
+        INTO #DET
+        FROM #FACT AS F
+        CROSS JOIN #ITEMS AS I
+        WHERE F.ID_FACTURA IS NOT NULL;
+
+        DECLARE @D_ID INT;
         DECLARE @D_CORR INT;
         DECLARE @D_DESC NVARCHAR(255);
         DECLARE @D_CANT DECIMAL(18, 2);
@@ -361,7 +432,7 @@ IF @COD = 0
 
         DECLARE CUR_DETALLES CURSOR LOCAL FAST_FORWARD FOR
         SELECT
-            IDENTIFICADOR,
+            ID_FACTURA,
             NUMERO_CORRELATIVO,
             DESCRIPCION,
             CANTIDAD,
@@ -415,16 +486,16 @@ IF @COD = 0
         ELSE IF @@TRANCOUNT > 0
             ROLLBACK TRANSACTION;
 
-        PRINT 'Detalles -> codigo ' + CAST(@COD AS VARCHAR(20))
-        + ' (llamadas: ' + CAST(@CONTADOR AS VARCHAR(20)) + ')';
+        SET @LOG = 'Detalles -> codigo ' + CAST(@COD AS VARCHAR(20));
+        SET @LOG = @LOG + ' (llamadas: ';
+        SET @LOG = @LOG + CAST(@CONTADOR AS VARCHAR(20)) + ')';
+        PRINT @LOG;
+
         IF @COD <> 0
             PRINT 'Error: ' + @MSG;
-        PRINT 'Tiempo detalles: ' + CAST(
-            CAST(
-                DATEDIFF(MILLISECOND, @T, SYSDATETIME())
-                / 1000.0 AS DECIMAL(10, 2)
-            ) AS VARCHAR(20)
-        ) + ' seg';
+
+        SET @SEG = DATEDIFF(MILLISECOND, @T, SYSDATETIME()) / 1000.0;
+        PRINT 'Tiempo detalles: ' + CAST(@SEG AS VARCHAR(20)) + ' seg';
     END;
 
 SET @T = SYSDATETIME();
@@ -433,27 +504,22 @@ SET @SQL = NULL;
 SELECT
     @SQL = STRING_AGG(
         CAST(
-            'ALTER INDEX ' + QUOTENAME(INDICE) + ' ON ' + QUOTENAME(TABLA)
-            + ' REBUILD;' AS NVARCHAR(MAX)
-        ), ' '
+            CONCAT(
+                'ALTER INDEX ', QUOTENAME(INDICE),
+                ' ON ', QUOTENAME(TABLA), ' REBUILD;'
+            ) AS NVARCHAR(MAX)
+        ),
+        ' '
     )
 FROM #INDICES;
 
 IF @SQL IS NOT NULL
     BEGIN
         EXEC SP_EXECUTESQL @SQL;
-        PRINT 'Indices reconstruidos: ' + CAST(
-            CAST(
-                DATEDIFF(MILLISECOND, @T, SYSDATETIME())
-                / 1000.0 AS DECIMAL(10, 2)
-            ) AS VARCHAR(20)
-        ) + ' seg';
+        SET @SEG = DATEDIFF(MILLISECOND, @T, SYSDATETIME()) / 1000.0;
+        PRINT 'Indices reconstruidos: ' + CAST(@SEG AS VARCHAR(20)) + ' seg';
     END;
 
-PRINT 'TIEMPO TOTAL: ' + CAST(
-    CAST(
-        DATEDIFF(MILLISECOND, @T_TOTAL, SYSDATETIME())
-        / 1000.0 AS DECIMAL(10, 2)
-    ) AS VARCHAR(20)
-) + ' seg';
+SET @SEG = DATEDIFF(MILLISECOND, @T_TOTAL, SYSDATETIME()) / 1000.0;
+PRINT 'TIEMPO TOTAL: ' + CAST(@SEG AS VARCHAR(20)) + ' seg';
 GO

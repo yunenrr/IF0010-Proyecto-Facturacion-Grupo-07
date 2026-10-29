@@ -3,17 +3,19 @@ GO
 
 CREATE OR ALTER PROCEDURE USP_CREAR_FACTURA_SIN_FILTRO (
     @ID_EMPRESA INT,
-    @ID_CLIENTE INT,
+    @ID_CLIENTE_FISICO INT = NULL,
+    @ID_CLIENTE_JURIDICO INT = NULL,
     @COD_MONEDA CHAR(3),
     @COD_TIPO VARCHAR(10),
     @COD_ESTADO VARCHAR(10),
+    @IDENTIFICADOR_COMPROBANTE VARCHAR(50),
     @FECHA_EMISION DATE = NULL,
     @OBSERVACIONES NVARCHAR(255) = NULL,
     @SUBTOTAL DECIMAL(18, 2) = 0,
     @TOTAL_DESCUENTOS DECIMAL(18, 2) = 0,
     @IMPUESTOS_APLICADOS DECIMAL(18, 2) = 0,
     @MONTO_TOTAL DECIMAL(18, 2) = 0,
-    @IDENTIFICADOR VARCHAR(50) = NULL OUTPUT,
+    @IDENTIFICADOR INT = NULL OUTPUT,
     @CODIGO_ERROR INT OUTPUT,
     @MENSAJE VARCHAR(500) OUTPUT
 )
@@ -24,19 +26,32 @@ BEGIN
     SET @CODIGO_ERROR = 0;
     SET @MENSAJE = 'Factura creada correctamente';
 
+    -- VALIDACIÓN DE REGLA DE NEGOCIO (Cliente Físico o Jurídico, no ambos)
+    IF (@ID_CLIENTE_FISICO IS NOT NULL AND @ID_CLIENTE_JURIDICO IS NOT NULL)
+        BEGIN
+            SET @CODIGO_ERROR = 50001;
+            SET
+                @MENSAJE = 'Error: Una factura no puede tener un cliente '
+                + 'físico y un cliente jurídico al mismo tiempo.';
+            RETURN;
+        END
+
+    IF (@ID_CLIENTE_FISICO IS NULL AND @ID_CLIENTE_JURIDICO IS NULL)
+        BEGIN
+            SET @CODIGO_ERROR = 50002;
+            SET
+                @MENSAJE = 'Error: La factura debe tener asignado '
+                + 'un cliente físico o un cliente jurídico '
+                + 'obligatoriamente.';
+            RETURN;
+        END
+
     -- Proceso
     BEGIN TRY
         BEGIN TRANSACTION;
 
-        IF @IDENTIFICADOR IS NULL
-            SET
-                @IDENTIFICADOR
-                = FORMAT(GETDATE(), 'yyyyMMddHHmmss')
-                + '-'
-                + @COD_TIPO;
-
         INSERT INTO FACTURA (
-            IDENTIFICADOR,
+            IDENTIFICADOR_COMPROBANTE,
             FECHA_EMISION,
             SUBTOTAL,
             TOTAL_DESCUENTOS,
@@ -44,13 +59,14 @@ BEGIN
             MONTO_TOTAL,
             OBSERVACIONES,
             ID_EMPRESA,
-            ID_CLIENTE,
+            ID_CLIENTE_FISICO,
+            ID_CLIENTE_JURIDICO,
             COD_IDENTIFICADOR_MONEDA,
             COD_IDENTIFICADOR_TIPO,
             COD_IDENTIFICADOR_ESTADO
         )
         VALUES (
-            @IDENTIFICADOR,
+            @IDENTIFICADOR_COMPROBANTE,
             ISNULL(@FECHA_EMISION, CAST(GETDATE() AS DATE)),
             @SUBTOTAL,
             @TOTAL_DESCUENTOS,
@@ -58,19 +74,21 @@ BEGIN
             @MONTO_TOTAL,
             @OBSERVACIONES,
             @ID_EMPRESA,
-            @ID_CLIENTE,
+            @ID_CLIENTE_FISICO,
+            @ID_CLIENTE_JURIDICO,
             @COD_MONEDA,
             @COD_TIPO,
             @COD_ESTADO
         );
 
+        SET @IDENTIFICADOR = SCOPE_IDENTITY();
+
         COMMIT TRANSACTION;
     END TRY
     BEGIN CATCH
-        -- si algo falla se deshace todo
         IF @@TRANCOUNT > 0
             ROLLBACK TRANSACTION;
-
+        SET @IDENTIFICADOR = NULL;
         SET @CODIGO_ERROR = ERROR_NUMBER();
         SET @MENSAJE = ERROR_MESSAGE();
     END CATCH;
