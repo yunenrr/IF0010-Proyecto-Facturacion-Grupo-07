@@ -1,15 +1,16 @@
 USE SISTEMADEFACTURACION;
 GO
 
-IF
-    EXISTS (
-        SELECT 1 FROM SYS.OBJECTS
-        WHERE NAME = 'PR_INSERTARCLIENTE_FISICO' AND TYPE = 'P'
-    )
+IF EXISTS (
+    SELECT 1
+    FROM SYS.OBJECTS
+    WHERE NAME = 'PR_INSERTARCLIENTE_FISICO' AND TYPE = 'P'
+)
     BEGIN
         DROP PROCEDURE DBO.PR_INSERTARCLIENTE_FISICO;
     END
 GO
+
 CREATE OR ALTER PROCEDURE DBO.PR_INSERTARCLIENTE_FISICO
     @CEDULA VARCHAR(20),
     @NOMBRE VARCHAR(50),
@@ -26,6 +27,7 @@ BEGIN
 
     BEGIN TRY
         BEGIN TRANSACTION;
+        
         IF TRIM(@CEDULA) = '' OR @CEDULA IS NULL
             THROW 50001, 'La cédula del cliente es obligatoria y no puede estar vacía.', 1;
 
@@ -38,34 +40,81 @@ BEGIN
         IF @ID_DIRECCION IS NULL
             THROW 50004, 'Debe asociar una dirección válida al cliente.', 1;
 
-        IF NOT EXISTS (SELECT 1 FROM DIRECCION WHERE ID_DIRECCION = @ID_DIRECCION)
+        IF NOT EXISTS (
+            SELECT 1
+            FROM DIRECCION
+            WHERE ID_DIRECCION = @ID_DIRECCION
+        )
             THROW 50005, 'La dirección especificada no existe en el sistema.', 1;
 
-        IF EXISTS (SELECT 1 FROM CLIENTE_FISICO WHERE CEDULA = @CEDULA) OR EXISTS (SELECT 1 FROM CLIENTE_JURIDICO WHERE CEDULA = @CEDULA)
+        IF EXISTS (
+            SELECT 1
+            FROM CLIENTE_FISICO
+            WHERE CEDULA = @CEDULA
+        )
+            OR EXISTS (
+                SELECT 1
+                FROM CLIENTE_JURIDICO
+                WHERE CEDULA = @CEDULA
+            )
             THROW 50006, 'Ya se encuentra registrado un cliente con el número de cédula indicado.', 1;
 
-        IF EXISTS (SELECT 1 FROM CLIENTE_FISICO WHERE CORREO_ELECTRONICO = @CORREO_ELECTRONICO) OR EXISTS (SELECT 1 FROM CLIENTE_JURIDICO WHERE CORREO_ELECTRONICO = @CORREO_ELECTRONICO)
+        IF EXISTS (
+            SELECT 1
+            FROM CLIENTE_FISICO
+            WHERE CORREO_ELECTRONICO = @CORREO_ELECTRONICO
+        )
+            OR EXISTS (
+                SELECT 1
+                FROM CLIENTE_JURIDICO
+                WHERE CORREO_ELECTRONICO = @CORREO_ELECTRONICO
+            )
             THROW 50007, 'El correo electrónico ingresado ya pertenece a otro cliente registrado.', 1;
 
-        IF EXISTS (SELECT 1 FROM CLIENTE_FISICO WHERE ID_DIRECCION = @ID_DIRECCION) OR EXISTS (SELECT 1 FROM CLIENTE_JURIDICO WHERE ID_DIRECCION = @ID_DIRECCION)
+        IF EXISTS (
+            SELECT 1
+            FROM CLIENTE_FISICO
+            WHERE ID_DIRECCION = @ID_DIRECCION
+        )
+            OR EXISTS (
+                SELECT 1
+                FROM CLIENTE_JURIDICO
+                WHERE ID_DIRECCION = @ID_DIRECCION
+            )
             THROW 50008, 'La dirección indicada ya se encuentra asignada a otro cliente.', 1;
 
         INSERT INTO CLIENTE_FISICO (
-            CEDULA, NOMBRE, APELLIDO1, APELLIDO2, CORREO_ELECTRONICO, TELEFONO,
-            FECHA_REGISTRO, ULTIMA_ACTUALIZACION, ID_DIRECCION
+            CEDULA,
+            NOMBRE,
+            APELLIDO1,
+            APELLIDO2,
+            CORREO_ELECTRONICO,
+            TELEFONO,
+            FECHA_REGISTRO,
+            ULTIMA_ACTUALIZACION,
+            ID_DIRECCION
         )
         VALUES (
-            TRIM(@CEDULA), TRIM(@NOMBRE), TRIM(@APELLIDO1), ISNULL(NULLIF(TRIM(@APELLIDO2), ''), NULL),
-            LOWER(TRIM(@CORREO_ELECTRONICO)), TRIM(@TELEFONO), GETDATE(), GETDATE(), @ID_DIRECCION
+            TRIM(@CEDULA),
+            TRIM(@NOMBRE),
+            TRIM(@APELLIDO1),
+            ISNULL(NULLIF(TRIM(@APELLIDO2), ''), NULL),
+            LOWER(TRIM(@CORREO_ELECTRONICO)),
+            TRIM(@TELEFONO),
+            GETDATE(),
+            GETDATE(),
+            @ID_DIRECCION
         );
 
         SET @ID_CLIENTE_GENERADO = SCOPE_IDENTITY();
+        
         COMMIT TRANSACTION;
 
     END TRY
     BEGIN CATCH
         IF XACT_STATE() <> 0
             ROLLBACK TRANSACTION;
+        
         DECLARE @ERROR_MESSAGE NVARCHAR(4000) = ERROR_MESSAGE();
         DECLARE @ERROR_SEVERITY INT = ERROR_SEVERITY();
         DECLARE @ERROR_STATE INT = ERROR_STATE();
