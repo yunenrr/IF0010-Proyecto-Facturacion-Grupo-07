@@ -30,7 +30,8 @@ BEGIN
     IF (@ID_CLIENTE_FISICO IS NOT NULL AND @ID_CLIENTE_JURIDICO IS NOT NULL)
         BEGIN
             SET @CODIGO_ERROR = 50001;
-            SET @MENSAJE = 'Error: Una factura no puede tener un cliente '
+            SET
+                @MENSAJE = 'Error: Una factura no puede tener un cliente '
                 + 'físico y un cliente jurídico al mismo tiempo.';
             RETURN;
         END
@@ -38,7 +39,8 @@ BEGIN
     IF (@ID_CLIENTE_FISICO IS NULL AND @ID_CLIENTE_JURIDICO IS NULL)
         BEGIN
             SET @CODIGO_ERROR = 50002;
-            SET @MENSAJE = 'Error: La factura debe tener asignado '
+            SET
+                @MENSAJE = 'Error: La factura debe tener asignado '
                 + 'un cliente físico o un cliente jurídico '
                 + 'obligatoriamente.';
             RETURN;
