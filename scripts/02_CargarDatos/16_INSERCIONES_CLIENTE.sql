@@ -16,11 +16,11 @@ SET NOCOUNT ON;
 WHILE @CONTADOR <= 50000
     BEGIN
         SET @IDDIRECCIONVALIDO = @CONTADOR;
-        
+
         SET @CORREOGEN = 'clienteprueba'
             + CAST(@CONTADOR AS VARCHAR(10))
             + '@facturacioncr.com';
-            
+
         SET @TELEFONOGEN = '8'
             + RIGHT(
                 '0000000' + CAST(7000000 + @CONTADOR AS VARCHAR(10)),
@@ -33,7 +33,7 @@ WHILE @CONTADOR <= 50000
                 -- FÍSICO
                 SET @CEDULAGEN = '1-'
                     + RIGHT(
-                        '0000' 
+                        '0000'
                         + CAST((@CONTADOR % 9000) + 1000 AS VARCHAR(10)),
                         4
                     )
@@ -42,10 +42,10 @@ WHILE @CONTADOR <= 50000
                         '0000' + CAST(@CONTADOR AS VARCHAR(10)),
                         4
                     );
-                    
+
                 SET @NOMBREGEN = 'Nombre'
                     + CAST(@CONTADOR AS VARCHAR(10));
-                    
+
                 SET @APELLIDOGEN = 'Apellido'
                     + CAST(@CONTADOR AS VARCHAR(10));
 
@@ -66,7 +66,7 @@ WHILE @CONTADOR <= 50000
                         '000000' + CAST(@CONTADOR AS VARCHAR(10)),
                         6
                     );
-                    
+
                 SET @RAZONGEN = 'Empresa Cliente S.A. '
                     + CAST(@CONTADOR AS VARCHAR(10));
 
