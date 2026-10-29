@@ -31,17 +31,21 @@ BEGIN
         END
 
     -- VALIDACIÓN REGLA DE NEGOCIO: Cliente Físico o Jurídico
-    IF (@ID_CLIENTE_FISICO IS NOT NULL AND @ID_CLIENTE_JURIDICO IS NOT NULL)
+    IF (@ID_CLIENTE_FISICO IS NOT NULL
+        AND @ID_CLIENTE_JURIDICO IS NOT NULL)
         BEGIN
             SET @CODIGO_ERROR = 7;
-            SET @MENSAJE = 'Una factura no puede tener un cliente físico y jurídico a la vez';
+            SET @MENSAJE = 'Una factura no puede tener un cliente '
+                + 'físico y jurídico a la vez';
             RETURN;
         END
 
-    IF (@ID_CLIENTE_FISICO IS NULL AND @ID_CLIENTE_JURIDICO IS NULL)
+    IF (@ID_CLIENTE_FISICO IS NULL
+        AND @ID_CLIENTE_JURIDICO IS NULL)
         BEGIN
             SET @CODIGO_ERROR = 7;
-            SET @MENSAJE = 'La factura debe tener asignado un cliente físico o jurídico';
+            SET @MENSAJE = 'La factura debe tener asignado un cliente '
+                + 'físico o jurídico';
             RETURN;
         END
 
@@ -69,14 +73,16 @@ BEGIN
     IF LEN(@COD_TIPO) > 10
         BEGIN
             SET @CODIGO_ERROR = 10;
-            SET @MENSAJE = 'El código de tipo de documento no puede exceder 10 caracteres';
+            SET @MENSAJE = 'El código de tipo de documento no puede '
+                + 'exceder 10 caracteres';
             RETURN;
         END
 
     IF @OBSERVACIONES IS NOT NULL AND LEN(@OBSERVACIONES) > 255
         BEGIN
             SET @CODIGO_ERROR = 11;
-            SET @MENSAJE = 'Las observaciones no pueden exceder 255 caracteres';
+            SET @MENSAJE = 'Las observaciones no pueden exceder '
+                + '255 caracteres';
             RETURN;
         END
 
@@ -153,7 +159,10 @@ BEGIN
     BEGIN TRY
         BEGIN TRANSACTION;
 
-        SET @IDENTIFICADOR_COMPROBANTE = DBO.FN_CLAVE_COMPROBANTE(GETDATE(), @COD_TIPO);
+        SET @IDENTIFICADOR_COMPROBANTE = DBO.FN_CLAVE_COMPROBANTE(
+            GETDATE(),
+            @COD_TIPO
+        );
 
         INSERT INTO FACTURA (
             IDENTIFICADOR_COMPROBANTE,
