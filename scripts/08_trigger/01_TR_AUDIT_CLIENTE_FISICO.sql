@@ -2,14 +2,14 @@ USE SISTEMADEFACTURACION;
 GO
 
 CREATE OR ALTER TRIGGER DBO.TR_AUDIT_CLIENTE_FISICO
-    ON DBO.CLIENTE_FISICO
-    AFTER INSERT, UPDATE, DELETE
+ON DBO.CLIENTE_FISICO
+AFTER INSERT, UPDATE, DELETE
 AS
 BEGIN
     SET NOCOUNT ON;
 
     BEGIN TRY
-        BEGIN TRANSACTION; -- Requisito del proyecto
+        BEGIN TRANSACTION;
 
         DECLARE @ID_TABLA INT;
 
@@ -34,34 +34,37 @@ BEGIN
             DESCRIPCION
         )
         SELECT
-            @ID_TABLA,
-            CAST(ISNULL(I.ID_CLIENTE, D.ID_CLIENTE) AS VARCHAR(50)),
+            @ID_TABLA AS ID_TABLA_AUDITADA,
+            CAST(
+                ISNULL(I.ID_CLIENTE, D.ID_CLIENTE) AS VARCHAR(50)
+            ) AS REGISTRO_ID,
             CASE
                 WHEN D.ID_CLIENTE IS NULL THEN 'INSERT'
                 WHEN I.ID_CLIENTE IS NULL THEN 'DELETE'
                 ELSE 'UPDATE'
-            END,
-            -- Si es INSERT, guarda '{}' en vez de NULL
+            END AS OPERACION_REALIZADA,
             ISNULL(
                 (
-                    SELECT *
+                    SELECT D2.*
                     FROM DELETED AS D2
                     WHERE D2.ID_CLIENTE = D.ID_CLIENTE
                     FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
                 ),
                 '{}'
-            ),
+            ) AS ESTADO_PREVIO,
             ISNULL(
                 (
-                    SELECT *
+                    SELECT I2.*
                     FROM INSERTED AS I2
                     WHERE I2.ID_CLIENTE = I.ID_CLIENTE
                     FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
                 ),
                 '{}'
-            ),
-            'Cambio en Cliente Físico ID: '
-            + CAST(ISNULL(I.ID_CLIENTE, D.ID_CLIENTE) AS VARCHAR(50))
+            ) AS NUEVO_ESTADO,
+            CONCAT(
+                'Cambio en Cliente Físico ID: ',
+                ISNULL(I.ID_CLIENTE, D.ID_CLIENTE)
+            ) AS DESCRIPCION
         FROM INSERTED AS I
         FULL OUTER JOIN DELETED AS D
             ON I.ID_CLIENTE = D.ID_CLIENTE;
@@ -74,7 +77,7 @@ BEGIN
 
         DECLARE @MSG NVARCHAR(4000) = ERROR_MESSAGE();
 
-        RAISERROR (@MSG, 16, 1); -- Requisito del proyecto
+        RAISERROR (@MSG, 16, 1);
     END CATCH;
 END;
 GO
