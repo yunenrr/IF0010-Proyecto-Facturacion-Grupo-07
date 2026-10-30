@@ -2,14 +2,14 @@ USE SISTEMADEFACTURACION;
 GO
 
 CREATE OR ALTER TRIGGER DBO.TR_SERVICIOS_HISTORIAL
-    ON DBO.SERVICIOS
-    AFTER UPDATE
+ON DBO.SERVICIOS
+AFTER UPDATE
 AS
 BEGIN
     SET NOCOUNT ON;
 
     BEGIN TRY
-        BEGIN TRANSACTION; -- Requisito del proyecto
+        BEGIN TRANSACTION;
 
         DECLARE @ID_TABLA INT;
 
@@ -25,7 +25,6 @@ BEGIN
                 SET @ID_TABLA = SCOPE_IDENTITY();
             END
 
-        -- Se guarda la fila completa (antes y después) en formato JSON
         INSERT INTO DBO.HISTORIAL (
             ID_TABLA_AUDITADA,
             REGISTRO_ID,
@@ -35,22 +34,22 @@ BEGIN
             DESCRIPCION
         )
         SELECT
-            @ID_TABLA,
-            CAST(I.ID_SERVICIO AS VARCHAR(50)),
-            'UPDATE',
+            @ID_TABLA AS ID_TABLA_AUDITADA,
+            CAST(I.ID_SERVICIO AS VARCHAR(50)) AS REGISTRO_ID,
+            'UPDATE' AS OPERACION_REALIZADA,
             (
-                SELECT *
+                SELECT D2.*
                 FROM DELETED AS D2
                 WHERE D2.ID_SERVICIO = D.ID_SERVICIO
                 FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
-            ),
+            ) AS ESTADO_PREVIO,
             (
-                SELECT *
+                SELECT I2.*
                 FROM INSERTED AS I2
                 WHERE I2.ID_SERVICIO = I.ID_SERVICIO
                 FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
-            ),
-            CONCAT('Servicio modificado por ', SUSER_SNAME())
+            ) AS NUEVO_ESTADO,
+            CONCAT('Servicio modificado por ', SUSER_SNAME()) AS DESCRIPCION
         FROM INSERTED AS I
         INNER JOIN DELETED AS D
             ON I.ID_SERVICIO = D.ID_SERVICIO;
@@ -63,7 +62,7 @@ BEGIN
 
         DECLARE @MSG NVARCHAR(4000) = ERROR_MESSAGE();
 
-        RAISERROR (@MSG, 16, 1); -- Requisito del proyecto
+        RAISERROR (@MSG, 16, 1);
     END CATCH;
 END;
 GO
