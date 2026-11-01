@@ -1,0 +1,68 @@
+USE SISTEMADEFACTURACION;
+GO
+
+CREATE OR ALTER TRIGGER DBO.TR_PRODUCTOS_HISTORIAL
+ON DBO.PRODUCTOS
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        DECLARE @ID_TABLA INT;
+
+        SELECT @ID_TABLA = ID_TABLA_AUDITADA
+        FROM DBO.TABLA_AUDITADA
+        WHERE NOMBRE_TABLA = 'PRODUCTOS';
+
+        IF @ID_TABLA IS NULL
+            BEGIN
+                INSERT INTO DBO.TABLA_AUDITADA (NOMBRE_TABLA)
+                VALUES ('PRODUCTOS');
+
+                SET @ID_TABLA = SCOPE_IDENTITY();
+            END
+
+        INSERT INTO DBO.HISTORIAL (
+            ID_TABLA_AUDITADA,
+            REGISTRO_ID,
+            OPERACION_REALIZADA,
+            ESTADO_PREVIO,
+            NUEVO_ESTADO,
+            DESCRIPCION
+        )
+        SELECT
+            @ID_TABLA AS ID_TABLA_AUDITADA,
+            CAST(I.ID_PRODUCTO AS VARCHAR(50)) AS REGISTRO_ID,
+            'UPDATE' AS OPERACION_REALIZADA,
+            (
+                SELECT D2.*
+                FROM DELETED AS D2
+                WHERE D2.ID_PRODUCTO = D.ID_PRODUCTO
+                FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+            ) AS ESTADO_PREVIO,
+            (
+                SELECT I2.*
+                FROM INSERTED AS I2
+                WHERE I2.ID_PRODUCTO = I.ID_PRODUCTO
+                FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+            ) AS NUEVO_ESTADO,
+            CONCAT('Producto modificado por ', SUSER_SNAME()) AS DESCRIPCION
+        FROM INSERTED AS I
+        INNER JOIN DELETED AS D
+            ON I.ID_PRODUCTO = D.ID_PRODUCTO;
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+
+        DECLARE @MSG NVARCHAR(4000) = ERROR_MESSAGE();
+
+        RAISERROR (@MSG, 16, 1);
+    END CATCH;
+END;
+GO
