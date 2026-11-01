@@ -5,6 +5,7 @@ DECLARE @CONTADOR INT = 1;
 DECLARE @CEDULAGEN VARCHAR(20);
 DECLARE @NOMBREGEN VARCHAR(50);
 DECLARE @APELLIDOGEN VARCHAR(50);
+DECLARE @APELLIDO2GEN VARCHAR(50);
 DECLARE @RAZONGEN VARCHAR(100);
 DECLARE @CORREOGEN VARCHAR(100);
 DECLARE @TELEFONOGEN VARCHAR(20);
@@ -53,11 +54,15 @@ WHILE @CONTADOR <= 50000
                 SET
                     @APELLIDOGEN = 'Apellido'
                     + CAST(@CONTADOR AS VARCHAR(10));
+                SET
+                    @APELLIDO2GEN = 'Apellido2_'
+                    + CAST(@CONTADOR AS VARCHAR(10));
 
                 EXEC DBO.PR_MIGRAR_CLIENTE_FISICO
                     @CEDULA = @CEDULAGEN,
                     @NOMBRE = @NOMBREGEN,
                     @APELLIDO1 = @APELLIDOGEN,
+                    @APELLIDO2 = @APELLIDO2GEN,
                     @CORREOELECTRONICO = @CORREOGEN,
                     @TELEFONO = @TELEFONOGEN,
                     @IDDIRECCION = @IDDIRECCIONVALIDO,
