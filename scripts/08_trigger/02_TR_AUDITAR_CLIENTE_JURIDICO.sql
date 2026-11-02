@@ -1,4 +1,4 @@
--- Trigger en la tabla cliente juridico para auditar los cambios de datos
+-- Trigger en la tabla CLIENTE_JURIDICO para auditar los cambios de datos
 
 USE SISTEMADEFACTURACION;
 GO
@@ -20,12 +20,12 @@ BEGIN
 
         -- VERIFICAR QUE LA TABLA EXISTA
         IF @ID_TABLA_AUDI IS NULL
-        BEGIN
-            INSERT INTO DBO.TABLA_AUDITADA (NOMBRE_TABLA)
-            VALUES ('CLIENTE_JURIDICO');
+            BEGIN
+                INSERT INTO DBO.TABLA_AUDITADA (NOMBRE_TABLA)
+                VALUES ('CLIENTE_JURIDICO');
 
-            SET @ID_TABLA_AUDI = SCOPE_IDENTITY();
-        END;
+                SET @ID_TABLA_AUDI = SCOPE_IDENTITY();
+            END;
 
         -- REGISTRAR LOS CAMBIOS
         INSERT INTO DBO.HISTORIAL (
@@ -65,7 +65,7 @@ BEGIN
                 '{}'
             ) AS NUEVO_ESTADO,
             CONCAT(
-                'CAMBIO EN CLIENTE JURÍDICO ID: ',
+                'Cambio en Cliente Jurídico ID: ',
                 ISNULL(I.ID_CLIENTE, D.ID_CLIENTE)
             ) AS DESCRIPCION
         FROM INSERTED AS I
