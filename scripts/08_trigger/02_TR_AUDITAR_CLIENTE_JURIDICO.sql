@@ -1,5 +1,3 @@
--- Trigger en la tabla CLIENTE_JURIDICO para auditar los cambios de datos
-
 USE SISTEMADEFACTURACION;
 GO
 
@@ -11,6 +9,8 @@ BEGIN
     SET NOCOUNT ON;
 
     BEGIN TRY
+        BEGIN TRANSACTION;
+
         DECLARE @ID_TABLA_AUDI INT;
 
         -- OBTENER ID
@@ -71,9 +71,16 @@ BEGIN
         FROM INSERTED AS I
         FULL OUTER JOIN DELETED AS D
             ON I.ID_CLIENTE = D.ID_CLIENTE;
+
+        COMMIT TRANSACTION;
     END TRY
     BEGIN CATCH
-        THROW;
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+
+        DECLARE @MSG NVARCHAR(4000) = ERROR_MESSAGE();
+
+        RAISERROR (@MSG, 16, 1);
     END CATCH;
 END;
 GO
