@@ -26,3 +26,54 @@ BEGIN
             END;
 
         INSERT INTO DBO.HISTORIAL (
+            ID_TABLA_AUDITADA,
+            REGISTRO_ID,
+            OPERACION_REALIZADA,
+            ESTADO_PREVIO,
+            NUEVO_ESTADO,
+            DESCRIPCION
+        )
+        SELECT
+            @ID_TABLA AS ID_TABLA_AUDITADA,
+            CAST(I.IDENTIFICADOR_FACTURA AS VARCHAR(30))
+            + '-'
+            + CAST(I.NUMERO_CORRELATIVO AS VARCHAR(20)) AS REGISTRO_ID,
+            'UPDATE' AS OPERACION_REALIZADA,
+            (
+                SELECT D2.*
+                FROM DELETED AS D2
+                WHERE
+                    D2.IDENTIFICADOR_FACTURA = D.IDENTIFICADOR_FACTURA
+                    AND D2.NUMERO_CORRELATIVO = D.NUMERO_CORRELATIVO
+                FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+            ) AS ESTADO_PREVIO,
+            (
+                SELECT I2.*
+                FROM INSERTED AS I2
+                WHERE
+                    I2.IDENTIFICADOR_FACTURA = I.IDENTIFICADOR_FACTURA
+                    AND I2.NUMERO_CORRELATIVO = I.NUMERO_CORRELATIVO
+                FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+            ) AS NUEVO_ESTADO,
+            CONCAT(
+                'Detalle factura modificado por ',
+                SUSER_SNAME()
+            ) AS DESCRIPCION
+        FROM INSERTED AS I
+        INNER JOIN DELETED AS D
+            ON
+                I.IDENTIFICADOR_FACTURA = D.IDENTIFICADOR_FACTURA
+                AND I.NUMERO_CORRELATIVO = D.NUMERO_CORRELATIVO;
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+
+        DECLARE @MSG NVARCHAR(4000) = ERROR_MESSAGE();
+
+        RAISERROR (@MSG, 16, 1);
+    END CATCH;
+END;
+GO
