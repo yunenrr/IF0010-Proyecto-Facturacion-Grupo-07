@@ -3,7 +3,7 @@ GO
 
 CREATE OR ALTER TRIGGER DBO.TR_SERVICIOS_HISTORIAL
 ON DBO.SERVICIOS
-AFTER UPDATE
+AFTER INSERT, UPDATE, DELETE
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -35,23 +35,39 @@ BEGIN
         )
         SELECT
             @ID_TABLA AS ID_TABLA_AUDITADA,
-            CAST(I.ID_SERVICIO AS VARCHAR(50)) AS REGISTRO_ID,
-            'UPDATE' AS OPERACION_REALIZADA,
-            (
-                SELECT D2.*
-                FROM DELETED AS D2
-                WHERE D2.ID_SERVICIO = D.ID_SERVICIO
-                FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+            CAST(
+                ISNULL(I.ID_SERVICIO, D.ID_SERVICIO) AS VARCHAR(50)
+            ) AS REGISTRO_ID,
+            CASE
+                WHEN D.ID_SERVICIO IS NULL THEN 'INSERT'
+                WHEN I.ID_SERVICIO IS NULL THEN 'DELETE'
+                ELSE 'UPDATE'
+            END AS OPERACION_REALIZADA,
+            -- Si es INSERT, guarda '{}' en vez de NULL
+            ISNULL(
+                (
+                    SELECT D2.*
+                    FROM DELETED AS D2
+                    WHERE D2.ID_SERVICIO = D.ID_SERVICIO
+                    FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+                ),
+                '{}'
             ) AS ESTADO_PREVIO,
-            (
-                SELECT I2.*
-                FROM INSERTED AS I2
-                WHERE I2.ID_SERVICIO = I.ID_SERVICIO
-                FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+            ISNULL(
+                (
+                    SELECT I2.*
+                    FROM INSERTED AS I2
+                    WHERE I2.ID_SERVICIO = I.ID_SERVICIO
+                    FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+                ),
+                '{}'
             ) AS NUEVO_ESTADO,
-            CONCAT('Servicio modificado por ', SUSER_SNAME()) AS DESCRIPCION
+            CONCAT(
+                'Cambio en Servicio ID: ',
+                ISNULL(I.ID_SERVICIO, D.ID_SERVICIO)
+            ) AS DESCRIPCION
         FROM INSERTED AS I
-        INNER JOIN DELETED AS D
+        FULL OUTER JOIN DELETED AS D
             ON I.ID_SERVICIO = D.ID_SERVICIO;
 
         COMMIT TRANSACTION;
