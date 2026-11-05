@@ -14,84 +14,118 @@ DECLARE @IDSALIDA INT;
 
 SET NOCOUNT ON;
 
-WHILE @CONTADOR <= 50000
-    BEGIN
-        SET @IDDIRECCIONVALIDO = @CONTADOR;
+WITH NUMEROS AS (
+    SELECT TOP (25000)
+        ROW_NUMBER() OVER (
+            ORDER BY (SELECT NULL)
+        ) AS N
+    FROM SYS.OBJECTS AS A
+    CROSS JOIN SYS.OBJECTS AS B
+)
 
-        SET
-            @CORREOGEN = 'clienteprueba'
-            + CAST(@CONTADOR AS VARCHAR(10))
-            + '@facturacioncr.com';
+INSERT INTO DBO.CLIENTE_FISICO (
+    CEDULA,
+    NOMBRE,
+    APELLIDO1,
+    APELLIDO2,
+    CORREO_ELECTRONICO,
+    TELEFONO,
+    FECHA_REGISTRO,
+    ULTIMA_ACTUALIZACION,
+    ID_DIRECCION
+)
+SELECT
+    CONCAT(
+        '1-',
+        RIGHT(
+            '0000'
+            + CAST((N % 9000) + 1000 AS VARCHAR(10)),
+            4
+        ),
+        '-',
+        RIGHT(
+            '0000'
+            + CAST(N * 2 AS VARCHAR(10)),
+            4
+        )
+    ),
+    CONCAT('Nombre', N),
+    CONCAT('Apellido', N),
+    CONCAT('Apellido2_', N),
+    LOWER(
+        CONCAT(
+            'clienteprueba',
+            N * 2,
+            '@facturacioncr.com'
+        )
+    ),
+    CONCAT(
+        '8',
+        RIGHT(
+            '0000000'
+            + CAST(7000000 + N AS VARCHAR(10)),
+            7
+        )
+    ),
+    GETDATE(),
+    GETDATE(),
+    N * 2
+FROM NUMEROS;
+GO
 
-        SET
-            @TELEFONOGEN = '8'
-            + RIGHT(
-                '0000000' + CAST(7000000 + @CONTADOR AS VARCHAR(10)),
-                7
-            );
+WITH NUMEROS AS (
+    SELECT TOP (25000)
+        ROW_NUMBER() OVER (
+            ORDER BY (SELECT NULL)
+        ) AS N
+    FROM SYS.OBJECTS AS A
+    CROSS JOIN SYS.OBJECTS AS B
+)
 
-        -- Alternamos entre cliente físico y jurídico
-        IF (@CONTADOR % 2 = 0)
-            BEGIN
-                -- FÍSICO
-                SET
-                    @CEDULAGEN = '1-'
-                    + RIGHT(
-                        '0000'
-                        + CAST((@CONTADOR % 9000) + 1000 AS VARCHAR(10)),
-                        4
-                    )
-                    + '-'
-                    + RIGHT(
-                        '0000' + CAST(@CONTADOR AS VARCHAR(10)),
-                        4
-                    );
-
-                SET
-                    @NOMBREGEN = 'Nombre'
-                    + CAST(@CONTADOR AS VARCHAR(10));
-
-                SET
-                    @APELLIDOGEN = 'Apellido'
-                    + CAST(@CONTADOR AS VARCHAR(10));
-
-                EXEC DBO.PR_MIGRAR_CLIENTE_FISICO
-                    @CEDULA = @CEDULAGEN,
-                    @NOMBRE = @NOMBREGEN,
-                    @APELLIDO1 = @APELLIDOGEN,
-                    @CORREOELECTRONICO = @CORREOGEN,
-                    @TELEFONO = @TELEFONOGEN,
-                    @IDDIRECCION = @IDDIRECCIONVALIDO,
-                    @IDCLIENTEGENERADO = @IDSALIDA OUTPUT;
-            END
-        ELSE
-            BEGIN
-                -- JURÍDICO
-                SET
-                    @CEDULAGEN = '3-101-'
-                    + RIGHT(
-                        '000000' + CAST(@CONTADOR AS VARCHAR(10)),
-                        6
-                    );
-
-                SET
-                    @RAZONGEN = 'Empresa Cliente S.A. '
-                    + CAST(@CONTADOR AS VARCHAR(10));
-
-                SET @NOMBRECOMERCIALGEN =
-                    'COMERCIAL CLIENTE '
-                    + CAST(@CONTADOR AS VARCHAR(10));
-
-                EXEC DBO.PR_MIGRAR_CLIENTE_JURIDICO
-                    @CEDULA = @CEDULAGEN,
-                    @RAZONSOCIAL = @RAZONGEN,
-                    @NOMBRECOMERCIAL = @NOMBRECOMERCIALGEN,
-                    @CORREOELECTRONICO = @CORREOGEN,
-                    @TELEFONO = @TELEFONOGEN,
-                    @IDDIRECCION = @IDDIRECCIONVALIDO,
-                    @IDCLIENTEGENERADO = @IDSALIDA OUTPUT;
-            END
-
-        SET @CONTADOR = @CONTADOR + 1;
-    END;
+INSERT INTO DBO.CLIENTE_JURIDICO (
+    CEDULA,
+    RAZON_SOCIAL,
+    NOMBRE_COMERCIAL,
+    CORREO_ELECTRONICO,
+    TELEFONO,
+    FECHA_REGISTRO,
+    ULTIMA_ACTUALIZACION,
+    ID_DIRECCION
+)
+SELECT
+    CONCAT(
+        '3-101-',
+        RIGHT(
+            '000000'
+            + CAST((N * 2) - 1 AS VARCHAR(10)),
+            6
+        )
+    ),
+    CONCAT(
+        'EMPRESA CLIENTE S.A. ',
+        N
+    ),
+    CONCAT(
+        'COMERCIAL CLIENTE ',
+        N
+    ),
+    LOWER(
+        CONCAT(
+            'clienteprueba',
+            (N * 2) - 1,
+            '@facturacioncr.com'
+        )
+    ),
+    CONCAT(
+        '8',
+        RIGHT(
+            '0000000'
+            + CAST(7000000 + N AS VARCHAR(10)),
+            7
+        )
+    ),
+    GETDATE(),
+    GETDATE(),
+    (N * 2) - 1
+FROM NUMEROS;
 GO
