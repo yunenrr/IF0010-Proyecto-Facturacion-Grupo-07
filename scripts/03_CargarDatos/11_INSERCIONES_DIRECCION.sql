@@ -5,12 +5,6 @@ DISABLE TRIGGER DBO.TR_DIRECCION_AUDITORIA
 ON DBO.DIRECCION;
 GO
 
-DECLARE @DireccionesBase TABLE (
-    ID INT IDENTITY (1, 1),
-    DIRECCION_EXACTA VARCHAR(500),
-    ID_DISTRITO INT
-);
-
 INSERT INTO @DireccionesBase (
     DIRECCION_EXACTA,
     ID_DISTRITO
@@ -117,45 +111,26 @@ VALUES
 ('Puntarenas centro, Paseo de los Turistas frente al mar', 60101),
 ('Limón centro, frente al parque Vargas', 70101);
 
-DECLARE @BLOQUE INT = 1;
-DECLARE @TOTAL_BLOQUES INT = 500;
-DECLARE @ID_BASE INT;
-DECLARE @MAX_ID_BASE INT;
-DECLARE @DIRECCION_EXACTA VARCHAR(500);
-DECLARE @ID_DISTRITO INT;
-DECLARE @ID_GENERADO INT;
-
-SELECT @MAX_ID_BASE = MAX(ID) FROM @DireccionesBase;
-
-WHILE @BLOQUE <= @TOTAL_BLOQUES
-    BEGIN
-        SET @ID_BASE = 1;
-
-        WHILE @ID_BASE <= @MAX_ID_BASE
-            BEGIN
-                SELECT
-                    @DIRECCION_EXACTA = CONCAT(
-                        '[Lote ',
-                        CAST(@BLOQUE AS VARCHAR(10)),
-                        '] ',
-                        DIRECCION_EXACTA
-                    ),
-                    @ID_DISTRITO = ID_DISTRITO
-                FROM @DireccionesBase
-                WHERE ID = @ID_BASE;
-
-                EXEC DBO.PR_INSERTARDIRECCION
-                    @DIRECCIONEXACTA = @DIRECCION_EXACTA,
-                    @IDDISTRITO = @ID_DISTRITO,
-                    @IDDIRECCIONGENERADO = @ID_GENERADO OUTPUT;
-
-                SET @ID_BASE = @ID_BASE + 1;
-            END;
-
-        SET @BLOQUE = @BLOQUE + 1;
-    END;
-GO
-
-ENABLE TRIGGER DBO.TR_DIRECCION_AUDITORIA
-ON DBO.DIRECCION;
+WITH NUMEROS AS (
+    SELECT TOP (500)
+        ROW_NUMBER() OVER (
+            ORDER BY (SELECT NULL)
+        ) AS BLOQUE
+    FROM SYS.OBJECTS AS A
+    CROSS JOIN SYS.OBJECTS AS B
+)
+INSERT INTO DBO.DIRECCION (
+    DIRECCION_EXACTA,
+    ID_DISTRITO
+)
+SELECT
+    CONCAT(
+        '[LOTE ',
+        N.BLOQUE,
+        '] ',
+        D.DIRECCION_EXACTA
+    ) AS DIRECCION_EXACTA,
+    D.ID_DISTRITO
+FROM @DIRECCIONESBASE AS D
+CROSS JOIN NUMEROS AS N;
 GO
