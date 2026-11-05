@@ -29,13 +29,13 @@ BEGIN
                 DESCRIPCION
             )
             SELECT
-                @ID_TABLA_AUDITADA,
-                I.IDENTIFICADOR,
-                'INSERT',
-                NULL,
-                CAST(I.MONTO_TOTAL AS VARCHAR(100)),
-                GETDATE(),
-                'SE CREO UNA NUEVA FACTURA'
+                @ID_TABLA_AUDITADA AS ID_TABLA_AUDITADA,
+                I.IDENTIFICADOR AS REGISTRO_ID,
+                'INSERT' AS OPERACION_REALIZADA,
+                NULL AS ESTADO_PREVIO,
+                CAST(I.MONTO_TOTAL AS VARCHAR(100)) AS NUEVO_ESTADO,
+                GETDATE() AS FECHA_CAMBIO,
+                'SE CREO UNA NUEVA FACTURA' AS DESCRIPCION
             FROM INSERTED AS I;
         END;
 
@@ -52,13 +52,13 @@ BEGIN
                 DESCRIPCION
             )
             SELECT
-                @ID_TABLA_AUDITADA,
-                I.IDENTIFICADOR,
-                'UPDATE',
-                CAST(D.MONTO_TOTAL AS VARCHAR(100)),
-                CAST(I.MONTO_TOTAL AS VARCHAR(100)),
-                GETDATE(),
-                'SE MODIFICO LA FACTURA'
+                @ID_TABLA_AUDITADA AS ID_TABLA_AUDITADA,
+                I.IDENTIFICADOR AS REGISTRO_ID,
+                'UPDATE' AS OPERACION_REALIZADA,
+                CAST(D.MONTO_TOTAL AS VARCHAR(100)) AS ESTADO_PREVIO,
+                CAST(I.MONTO_TOTAL AS VARCHAR(100)) AS NUEVO_ESTADO,
+                GETDATE() AS FECHA_CAMBIO,
+                'SE MODIFICO LA FACTURA' AS DESCRIPCION
             FROM INSERTED AS I
             INNER JOIN DELETED AS D
                 ON I.IDENTIFICADOR = D.IDENTIFICADOR;
@@ -77,13 +77,13 @@ BEGIN
                 DESCRIPCION
             )
             SELECT
-                @ID_TABLA_AUDITADA,
-                D.IDENTIFICADOR,
-                'DELETE',
-                CAST(D.MONTO_TOTAL AS VARCHAR(100)),
-                NULL,
-                GETDATE(),
-                'SE ELIMINO LA FACTURA'
+                @ID_TABLA_AUDITADA AS ID_TABLA_AUDITADA,
+                D.IDENTIFICADOR AS REGISTRO_ID,
+                'DELETE' AS OPERACION_REALIZADA,
+                CAST(D.MONTO_TOTAL AS VARCHAR(100)) AS ESTADO_PREVIO,
+                NULL AS NUEVO_ESTADO,
+                GETDATE() AS FECHA_CAMBIO,
+                'SE ELIMINO LA FACTURA' AS DESCRIPCION
             FROM DELETED AS D;
         END;
 END;
