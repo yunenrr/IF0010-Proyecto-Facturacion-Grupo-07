@@ -20,7 +20,6 @@ BEGIN
         BEGIN
             INSERT INTO DBO.TABLA_AUDITADA (NOMBRE_TABLA)
             VALUES ('DIRECCION');
-        
             SET @ID_TABLA_AUDITADA = SCOPE_IDENTITY();
         END;
     -- INSERT
