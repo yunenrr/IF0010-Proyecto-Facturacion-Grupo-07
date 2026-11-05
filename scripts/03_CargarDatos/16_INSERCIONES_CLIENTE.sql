@@ -53,22 +53,35 @@ WHILE @CONTADOR <= 50000
                     + CAST(@CONTADOR AS VARCHAR(10));
 
                 SET
-                    @APELLIDOGEN = 'Apellido'
+                    @APELLIDOGEN = 'Apellido1_'
                     + CAST(@CONTADOR AS VARCHAR(10));
 
                 SET
                     @APELLIDO2GEN = 'Apellido2_'
                     + CAST(@CONTADOR AS VARCHAR(10));
 
-                EXEC DBO.PR_MIGRAR_CLIENTE_FISICO
-                    @CEDULA = @CEDULAGEN,
-                    @NOMBRE = @NOMBREGEN,
-                    @APELLIDO1 = @APELLIDOGEN,
-                    @APELLIDO2 = @APELLIDO2GEN,
-                    @CORREOELECTRONICO = @CORREOGEN,
-                    @TELEFONO = @TELEFONOGEN,
-                    @IDDIRECCION = @IDDIRECCIONVALIDO,
-                    @IDCLIENTEGENERADO = @IDSALIDA OUTPUT;
+                INSERT INTO DBO.CLIENTE_FISICO (
+                    CEDULA,
+                    NOMBRE,
+                    APELLIDO1,
+                    APELLIDO2,
+                    CORREO_ELECTRONICO,
+                    TELEFONO,
+                    FECHA_REGISTRO,
+                    ULTIMA_ACTUALIZACION,
+                    ID_DIRECCION
+                )
+                VALUES (
+                    TRIM(@CEDULAGEN),
+                    TRIM(@NOMBREGEN),
+                    TRIM(@APELLIDOGEN),
+                    TRIM(@APELLIDO2GEN),
+                    LOWER(TRIM(@CORREOGEN)),
+                    TRIM(@TELEFONOGEN),
+                    GETDATE(),
+                    GETDATE(),
+                    @IDDIRECCIONVALIDO
+                );
             END
         ELSE
             BEGIN
@@ -88,14 +101,26 @@ WHILE @CONTADOR <= 50000
                     @NOMBRECOMERCIALGEN = 'COMERCIAL CLIENTE '
                     + CAST(@CONTADOR AS VARCHAR(10));
 
-                EXEC DBO.PR_MIGRAR_CLIENTE_JURIDICO
-                    @CEDULA = @CEDULAGEN,
-                    @RAZONSOCIAL = @RAZONGEN,
-                    @NOMBRECOMERCIAL = @NOMBRECOMERCIALGEN,
-                    @CORREOELECTRONICO = @CORREOGEN,
-                    @TELEFONO = @TELEFONOGEN,
-                    @IDDIRECCION = @IDDIRECCIONVALIDO,
-                    @IDCLIENTEGENERADO = @IDSALIDA OUTPUT;
+                INSERT INTO DBO.CLIENTE_JURIDICO (
+                    CEDULA,
+                    RAZON_SOCIAL,
+                    NOMBRE_COMERCIAL,
+                    CORREO_ELECTRONICO,
+                    TELEFONO,
+                    FECHA_REGISTRO,
+                    ULTIMA_ACTUALIZACION,
+                    ID_DIRECCION
+                )
+                VALUES (
+                    TRIM(@CEDULAGEN),
+                    TRIM(@RAZONGEN),
+                    TRIM(@NOMBRECOMERCIALGEN),
+                    LOWER(TRIM(@CORREOGEN)),
+                    TRIM(@TELEFONOGEN),
+                    GETDATE(),
+                    GETDATE(),
+                    @IDDIRECCIONVALIDO
+                );
             END;
 
         SET @CONTADOR = @CONTADOR + 1;
