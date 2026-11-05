@@ -29,8 +29,6 @@ BEGIN
                 ID_TABLA_AUDITADA,
                 REGISTRO_ID,
                 OPERACION_REALIZADA,
-                ESTADO_PREVIO,
-                NUEVO_ESTADO,
                 FECHA_CAMBIO,
                 DESCRIPCION
             )
@@ -38,8 +36,6 @@ BEGIN
                 @ID_TABLA_AUDITADA AS ID_TABLA_AUDITADA,
                 I.ID_DIRECCION AS REGISTRO_ID,
                 'INSERT' AS OPERACION_REALIZADA,
-                NULL AS ESTADO_PREVIO,
-                I.DIRECCION_EXACTA AS NUEVO_ESTADO,
                 GETDATE() AS FECHA_CAMBIO,
                 'SE CREO UNA NUEVA DIRECCION' AS DESCRIPCION
             FROM INSERTED AS I;
@@ -52,8 +48,6 @@ BEGIN
                 ID_TABLA_AUDITADA,
                 REGISTRO_ID,
                 OPERACION_REALIZADA,
-                ESTADO_PREVIO,
-                NUEVO_ESTADO,
                 FECHA_CAMBIO,
                 DESCRIPCION
             )
@@ -61,8 +55,6 @@ BEGIN
                 @ID_TABLA_AUDITADA AS ID_TABLA_AUDITADA,
                 I.ID_DIRECCION AS REGISTRO_ID,
                 'UPDATE' AS OPERACION_REALIZADA,
-                D.DIRECCION_EXACTA AS ESTADO_PREVIO,
-                I.DIRECCION_EXACTA AS NUEVO_ESTADO,
                 GETDATE() AS FECHA_CAMBIO,
                 'SE ACTUALIZO LA UBICACION' AS DESCRIPCION
             FROM INSERTED AS I
@@ -77,8 +69,6 @@ BEGIN
                 ID_TABLA_AUDITADA,
                 REGISTRO_ID,
                 OPERACION_REALIZADA,
-                ESTADO_PREVIO,
-                NUEVO_ESTADO,
                 FECHA_CAMBIO,
                 DESCRIPCION
             )
@@ -86,8 +76,6 @@ BEGIN
                 @ID_TABLA_AUDITADA AS ID_TABLA_AUDITADA,
                 D.ID_DIRECCION AS REGISTRO_ID,
                 'DELETE' AS OPERACION_REALIZADA,
-                D.DIRECCION_EXACTA AS ESTADO_PREVIO,
-                NULL AS NUEVO_ESTADO,
                 GETDATE() AS FECHA_CAMBIO,
                 'SE ELIMINO LA DIRECCION' AS DESCRIPCION
             FROM DELETED AS D;
