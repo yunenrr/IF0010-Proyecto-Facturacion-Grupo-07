@@ -88,7 +88,30 @@ VALUES
 ('Curridabat centro, costado oeste de la iglesia católica', 11801),
 ('Granadilla de Curridabat, condominio terrazas casa #5', 11802),
 ('Sánchez de Curridabat, entrada principal residencial', 11803),
-('Tirrases de Curridabat, sector ponceano casa #30', 11804);
+('Tirrases de Curridabat, sector ponceano casa #30', 11804),
+('San Isidro de El General, avenida central calle 2', 11901),
+('Daniel Flores, Pérez Zeledón, frente al centro comercial', 11903),
+('Alajuela centro, Costado oeste del Parque Central', 20101),
+('San José de Alajuela, 200m norte de la plaza', 20102),
+('La Guácima de Alajuela, condominio hacienda los reyes', 20105),
+('San Ramón centro, costado norte del mercado municipal', 20201),
+('Grecia centro, frente a la iglesia de metal', 20301),
+('Atenas centro, 150m este del parque central', 20501),
+('Naranjo centro, costado oeste del templo', 20601),
+('Palmares centro, 75m norte de la bomba', 20701),
+('San Carlos, Quesada, costado este de la catedral', 21001),
+('Cartago centro, Ruinas de Santiago 50m norte', 30101),
+('Paraíso de Cartago, frente al parque metropolitano', 30201),
+('Tres Ríos de La Unión, costado oeste del parque', 30301),
+('Turrialba centro, frente al mercado municipal', 30501),
+('Heredia centro, El Fortín 50m norte', 40101),
+('Barva de Heredia, costado este de la plaza', 40201),
+('Santo Domingo de Heredia, frente al parque', 40301),
+('San Antonio de Belén, contiguo al polideportivo', 40701),
+('Liberia centro, Guanacaste, frente al parque central', 50101),
+('Nicoya centro, costado oeste del templo colonial', 50201),
+('Puntarenas centro, Paseo de los Turistas frente al mar', 60101),
+('Limón centro, frente al parque Vargas', 70101);
 
 WITH NUMEROS AS (
     SELECT TOP (500)
