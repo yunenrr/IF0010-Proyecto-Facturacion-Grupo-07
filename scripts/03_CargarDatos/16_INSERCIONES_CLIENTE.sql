@@ -83,8 +83,7 @@ WHILE @CONTADOR <= 50000
                     @RAZONGEN = 'Empresa Cliente S.A. '
                     + CAST(@CONTADOR AS VARCHAR(10));
 
-                SET @NOMBRECOMERCIALGEN =
-                    'COMERCIAL CLIENTE '
+                SET @NOMBRECOMERCIALGEN = 'COMERCIAL CLIENTE '
                     + CAST(@CONTADOR AS VARCHAR(10));
                 
                 EXEC DBO.PR_MIGRAR_CLIENTE_JURIDICO
@@ -96,7 +95,6 @@ WHILE @CONTADOR <= 50000
                     @IDDIRECCION = @IDDIRECCIONVALIDO,
                     @IDCLIENTEGENERADO = @IDSALIDA OUTPUT;
             END
-
         SET @CONTADOR = @CONTADOR + 1;
     END;
 GO
