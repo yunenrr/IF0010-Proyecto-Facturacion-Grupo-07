@@ -55,6 +55,7 @@ WHILE @CONTADOR <= 50000
                 SET
                     @APELLIDOGEN = 'Apellido'
                     + CAST(@CONTADOR AS VARCHAR(10));
+
                 SET
                     @APELLIDO2GEN = 'Apellido2_'
                     + CAST(@CONTADOR AS VARCHAR(10));
@@ -83,9 +84,10 @@ WHILE @CONTADOR <= 50000
                     @RAZONGEN = 'Empresa Cliente S.A. '
                     + CAST(@CONTADOR AS VARCHAR(10));
 
-                SET @NOMBRECOMERCIALGEN = 'COMERCIAL CLIENTE '
+                SET
+                    @NOMBRECOMERCIALGEN = 'COMERCIAL CLIENTE '
                     + CAST(@CONTADOR AS VARCHAR(10));
-                
+
                 EXEC DBO.PR_MIGRAR_CLIENTE_JURIDICO
                     @CEDULA = @CEDULAGEN,
                     @RAZONSOCIAL = @RAZONGEN,
@@ -94,7 +96,8 @@ WHILE @CONTADOR <= 50000
                     @TELEFONO = @TELEFONOGEN,
                     @IDDIRECCION = @IDDIRECCIONVALIDO,
                     @IDCLIENTEGENERADO = @IDSALIDA OUTPUT;
-            END
+            END;
+
         SET @CONTADOR = @CONTADOR + 1;
     END;
 GO
