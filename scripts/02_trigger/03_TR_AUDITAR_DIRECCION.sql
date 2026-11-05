@@ -29,13 +29,13 @@ BEGIN
                 DESCRIPCION
             )
             SELECT
-                @ID_TABLA_AUDITADA,
-                I.ID_DIRECCION,
-                'INSERT',
-                NULL,
-                I.DIRECCION_EXACTA,
-                GETDATE(),
-                'SE CREO UNA NUEVA DIRECCION'
+                @ID_TABLA_AUDITADA AS ID_TABLA_AUDITADA,
+                I.ID_DIRECCION AS REGISTRO_ID,
+                'INSERT' AS OPERACION_REALIZADA,
+                NULL AS ESTADO_PREVIO,
+                I.DIRECCION_EXACTA AS NUEVO_ESTADO,
+                GETDATE() AS FECHA_CAMBIO,
+                'SE CREO UNA NUEVA DIRECCION' AS DESCRIPCION
             FROM INSERTED AS I;
         END;
 
@@ -52,13 +52,13 @@ BEGIN
                 DESCRIPCION
             )
             SELECT
-                @ID_TABLA_AUDITADA,
-                I.ID_DIRECCION,
-                'UPDATE',
-                D.DIRECCION_EXACTA,
-                I.DIRECCION_EXACTA,
-                GETDATE(),
-                'SE ACTUALIZO LA UBICACION'
+                @ID_TABLA_AUDITADA AS ID_TABLA_AUDITADA,
+                I.ID_DIRECCION AS REGISTRO_ID,
+                'UPDATE' AS OPERACION_REALIZADA,
+                D.DIRECCION_EXACTA AS ESTADO_PREVIO,
+                I.DIRECCION_EXACTA AS NUEVO_ESTADO,
+                GETDATE() AS FECHA_CAMBIO,
+                'SE ACTUALIZO LA UBICACION' AS DESCRIPCION
             FROM INSERTED AS I
             INNER JOIN DELETED AS D
                 ON I.ID_DIRECCION = D.ID_DIRECCION;
@@ -77,13 +77,13 @@ BEGIN
                 DESCRIPCION
             )
             SELECT
-                @ID_TABLA_AUDITADA,
-                D.ID_DIRECCION,
-                'DELETE',
-                D.DIRECCION_EXACTA,
-                NULL,
-                GETDATE(),
-                'SE ELIMINO LA DIRECCION'
+                @ID_TABLA_AUDITADA AS ID_TABLA_AUDITADA,
+                D.ID_DIRECCION AS REGISTRO_ID,
+                'DELETE' AS OPERACION_REALIZADA,
+                D.DIRECCION_EXACTA AS ESTADO_PREVIO,
+                NULL AS NUEVO_ESTADO,
+                GETDATE() AS FECHA_CAMBIO,
+                'SE ELIMINO LA DIRECCION' AS DESCRIPCION
             FROM DELETED AS D;
         END;
 END;
