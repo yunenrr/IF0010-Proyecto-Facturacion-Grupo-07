@@ -11,6 +11,7 @@ WITH NUMEROS AS (
     FROM SYS.ALL_OBJECTS AS A
     CROSS JOIN SYS.OBJECTS AS B
 )
+
 INSERT INTO DBO.CLIENTE_FISICO (
     CEDULA,
     NOMBRE,
@@ -36,17 +37,17 @@ SELECT
             + CAST(N * 2 AS VARCHAR(10)),
             4
         )
-    ),
-    CONCAT('Nombre', N),
-    CONCAT('Apellido', N),
-    CONCAT('Apellido2_', N),
+    ) AS CEDULA,
+    CONCAT('Nombre', N) AS NOMBRE,
+    CONCAT('Apellido', N) AS APELLIDO1,
+    CONCAT('Apellido2_', N) AS APELLIDO2,
     LOWER(
         CONCAT(
             'clienteprueba',
             N * 2,
             '@facturacioncr.com'
         )
-    ),
+    ) AS CORREO_ELECTRONICO,
     CONCAT(
         '8',
         RIGHT(
@@ -54,10 +55,10 @@ SELECT
             + CAST(7000000 + N AS VARCHAR(10)),
             7
         )
-    ),
-    GETDATE(),
-    GETDATE(),
-    N * 2
+    ) AS TELEFONO,
+    GETDATE() AS FECHA_REGISTRO,
+    GETDATE() AS ULTIMA_ACTUALIZACION,
+    N * 2 AS ID_DIRECCION
 FROM NUMEROS;
 GO
 
@@ -69,6 +70,7 @@ WITH NUMEROS AS (
     FROM SYS.ALL_OBJECTS AS A
     CROSS JOIN SYS.OBJECTS AS B
 )
+
 INSERT INTO DBO.CLIENTE_JURIDICO (
     CEDULA,
     RAZON_SOCIAL,
@@ -87,16 +89,16 @@ SELECT
             + CAST((N * 2) - 1 AS VARCHAR(10)),
             6
         )
-    ),
-    CONCAT('EMPRESA CLIENTE S.A. ', N),
-    CONCAT('COMERCIAL CLIENTE ', N),
+    ) AS CEDULA,
+    CONCAT('EMPRESA CLIENTE S.A. ', N) AS RAZON_SOCIAL,
+    CONCAT('COMERCIAL CLIENTE ', N) AS NOMBRE_COMERCIAL,
     LOWER(
         CONCAT(
             'clienteprueba',
             (N * 2) - 1,
             '@facturacioncr.com'
         )
-    ),
+    ) AS CORREO_ELECTRONICO,
     CONCAT(
         '8',
         RIGHT(
@@ -104,9 +106,9 @@ SELECT
             + CAST(7000000 + N AS VARCHAR(10)),
             7
         )
-    ),
-    GETDATE(),
-    GETDATE(),
-    (N * 2) - 1
+    ) AS TELEFONO,
+    GETDATE() AS FECHA_REGISTRO,
+    GETDATE() AS ULTIMA_ACTUALIZACION,
+    (N * 2) - 1 AS ID_DIRECCION
 FROM NUMEROS;
 GO
